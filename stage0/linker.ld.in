@@ -1,14 +1,16 @@
+#include <memory_map.h>
+
 ENTRY(_start)
 /* OUTPUT_FORMAT("binary") */
 
 SECTIONS {
-    . = 0x7c00;
+    . = STAGE0_PHY_ADDR;
 
     .bpb : {
         *(.bpb*)
     }
 
-    . = 0x7c00 + 90;
+    . = STAGE0_PHY_ADDR + 90;
 
     .text : {
         *(.text*)
@@ -28,7 +30,7 @@ SECTIONS {
     }
 
     stack_bottom = .;
-    . = 0x7c00 + 510;
+    . = STAGE0_END - 2;
     stack_top = .;
 
     .magic : {

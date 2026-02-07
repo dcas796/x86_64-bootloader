@@ -1,9 +1,9 @@
 INCLUDE_DIR := ../include
 BUILD_DIR := ./build
-LINKER_SCRIPT := $(BUILD_DIR)/linker.ld
 LINKER_SCRIPT_IN := ./linker.ld.in
-DEBUG_ELF := $(BUILD_DIR)/stage0.elf
-RESULT := $(BUILD_DIR)/stage0.bin
+LINKER_SCRIPT := $(BUILD_DIR)/linker.ld
+DEBUG_ELF := $(BUILD_DIR)/stage1.elf
+RESULT := $(BUILD_DIR)/stage1.bin
 
 CFLAGS := -g -c -m16 -ffreestanding -fno-pic -fno-stack-protector -nostdlib -Wall -Wextra -I$(INCLUDE_DIR)
 ASFLAGS := -g -m32 -c -I$(INCLUDE_DIR)

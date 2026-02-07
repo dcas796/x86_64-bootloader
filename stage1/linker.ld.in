@@ -1,0 +1,32 @@
+#include <memory_map.h>
+
+ENTRY(_start)
+/* OUTPUT_FORMAT("binary") */
+
+SECTIONS {
+    . = STAGE1_PHY_ADDR;
+
+    .text.start : {
+        *(.text.start*)
+    }
+
+    .text : {
+        *(.text*)
+    }
+
+    .data : {
+        *(.data*)
+    }
+
+    .rodata : {
+        *(.rodata*)
+    }
+
+    .bss : {
+        *(.bss*)
+        *(COMMON)
+    }
+
+    . = ALIGN(512);
+    __stage1_end = .;
+}

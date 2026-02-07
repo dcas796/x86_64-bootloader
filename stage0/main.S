@@ -1,9 +1,8 @@
+#include <memory_map.h>
+
 .extern stack_bottom
 .extern stack_top
 .extern boot_entry_offset
-
-.set STAGE1_OFFSET, 0x8000
-.set STAGE1_SEGMENT, 0x0000
 
 .code16
 
@@ -83,8 +82,10 @@ set_cnt:
     /* set the sector count to read */
     movw %bx, dap_nsects
     /* read the sectors */
-    movw $0x42, %ax
-    int $0x13
+    movb $0x42, %ah
+    movb boot_drive, %dl
+    movw $dap, %si
+    int $0x13       /* FIXME: handle when size of sector1 > 0x10000 - %bx (when it crosses the segment boundary) */
     /* check for errors */
     jc disk_error
     /* decrement %cx */
@@ -100,6 +101,9 @@ set_cnt:
 
     jmp read_loop
 read_complete:
+    /* remember to pass the drive_num as an argument */
+    movb boot_drive, %al
+    pushw %ax
     /* jump to stage1 */
     ljmp $STAGE1_SEGMENT, $STAGE1_OFFSET
 loop:
