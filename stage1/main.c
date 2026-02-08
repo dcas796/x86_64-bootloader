@@ -10,5 +10,4 @@ void main() {
     puts("Boot drive: 0x");
     itoa((int)boot_drive, boot_drive_str, 16);
     puts(boot_drive_str);
-
 }

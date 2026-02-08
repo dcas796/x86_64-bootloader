@@ -1,7 +1,7 @@
 INCLUDE_DIR := ../include
 BUILD_DIR := ./build
-LINKER_SCRIPT_IN := ./linker.ld.in
 LINKER_SCRIPT := $(BUILD_DIR)/linker.ld
+LINKER_SCRIPT_IN := ./linker.ld.in
 DEBUG_ELF := $(BUILD_DIR)/stage1.elf
 RESULT := $(BUILD_DIR)/stage1.bin
 
