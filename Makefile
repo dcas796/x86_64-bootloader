@@ -14,7 +14,9 @@ STAGE1_BIN := $(BUILD_DIR)/stage1.bin
 BOOT_IMG := $(BUILD_DIR)/boot.img
 
 .DEFAULT_GOAL := build
-.PHONY: build build-dir clean qemu qemu-debug qemu-debug-32
+.PHONY: all build build-dir clean qemu qemu-debug qemu-debug-32
+
+all: build
 
 build: build-dir $(BOOT_IMG)
 
