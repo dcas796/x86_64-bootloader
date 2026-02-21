@@ -38,11 +38,11 @@ static fat_type_t get_fat_type(const fat_t *fat) {
 
     if (count_of_clusters < 4085) {
         return FAT_TYPE_12;
-    } else if (count_of_clusters < 65525) {
-        return FAT_TYPE_16;
-    } else {
-        return FAT_TYPE_32;
     }
+    if (count_of_clusters < 65525) {
+        return FAT_TYPE_16;
+    }
+    return FAT_TYPE_32;
 }
 
 /* === PUBLIC API === */
