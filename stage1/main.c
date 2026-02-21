@@ -10,7 +10,7 @@ void main() {
     puts("stage2\r\n");
     char boot_drive_str[3];
     puts("Boot drive: 0x");
-    itoa((int)boot_drive, boot_drive_str, 16);
+    itoa(boot_drive, boot_drive_str, 16);
     puts(boot_drive_str);
     puts("\r\n");
 
@@ -39,4 +39,5 @@ void main() {
             puts("Unknown");
             break;
     }
+    puts("\r\n");
 }

@@ -7,7 +7,7 @@
 static uint32_t get_count_of_clusters(const fat_t *fat) {
     if (fat->bpb.bytes_per_sector == 0) return 0;
 
-    uint32_t root_dir_sectors = ((fat->bpb.root_entry_count * 32) + (fat->bpb.bytes_per_sector - 1)) / fat->bpb.bytes_per_sector;
+    uint32_t root_dir_sectors = (fat->bpb.root_entry_count * 32 + (fat->bpb.bytes_per_sector - 1)) / fat->bpb.bytes_per_sector;
 
     uint32_t fat_size;
     if (fat->bpb.fat_size_16 != 0) {
@@ -74,7 +74,6 @@ void get_short_name(const fat_dirent_t *dir, char name[9]) {
         ++i;
     }
     name[i] = '\0';
-    return;
 }
 
 /*
@@ -91,7 +90,6 @@ void get_short_extension(const fat_dirent_t *dir, char ext[4]) {
         ++i;
     }
     ext[i - 8] = '\0';
-    return;
 }
 
 /*
@@ -109,7 +107,8 @@ disk_status_t fat_from_drive(uint8_t drive_num, fat_t *fat) {
     uint8_t *buffer = (uint8_t*)FREE_MEM_ADDR;
     disk_status_t status = disk_read(drive_num, 0, 0, buffer, 1);
     if (status != DISK_SUCCESS) return status;
-    memcpy(&fat->bpb, buffer, sizeof(fat_bpb_common_t) + sizeof(fat_bpb_extended_fat32_t)); /* the size of the fat32 extended bpb is the largest, so copy that */
+    /* the size of the fat32 extended bpb is the largest, so copy that */
+    memcpy(&fat->bpb, buffer, sizeof(fat_bpb_common_t) + sizeof(fat_bpb_extended_fat32_t));
     fat->type = get_fat_type(fat);
     return DISK_SUCCESS;
 }
