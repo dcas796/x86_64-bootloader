@@ -2,11 +2,19 @@
 
 A simple bootloader for the x86_64 architecture.
 
-This bootloader loads a raw executable binary from a FAT32 formatted disk into memory and executes it. `stage0` is stored in the boot sector (sector 0) and `stage1` is stored in the first reserved sectors of the FAT32 file system.
+This bootloader loads a raw executable binary from a FAT formatted disk into memory and executes it. `stage0` is stored in the boot sector (sector 0) and `stage1` is stored in the first reserved sectors of the FAT file system.
+
+## Prerequisites
+
+You will need:
+- The Make build system
+- The x86_64-elf toolchain & the x86_64-elf-gcc compiler
+- The Python 3 interpreter
+- The mkfs.fat & mcopy commands (from the dosfstools & mtools packages, respectively)
 
 ## Usage
 
-The command `make disk` will write a FAT32 formatted disk image to `./build/disk.img` with the contents of the folder `./disk/`. The bootloader has a config file, `/boot/options.txt`, where boot parameters can be specified.
+The `make` command will write a FAT formatted disk image to `./build/boot.img` with the contents of the folder `./disk/`. The bootloader has a config file, `/boot/options.txt`, where boot parameters can be specified.
 
 ### `options.txt` format
 
@@ -24,8 +32,6 @@ When the computer boots up, the BIOS load the first sector of disk to `0x7c00`. 
 ### Stage 1
 
 In `stage1`, it will load `boot_binary` to `load_offset` using BIOS boot services. Then, it will load a temporary GPT and IDT and clear interrupts. Finally, it will jump to `load_offset`.
-
-## Building
 
 ## License
 

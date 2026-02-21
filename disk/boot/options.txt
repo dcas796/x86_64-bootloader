@@ -1,0 +1,2 @@
+boot_binary=/boot/kernel.elf
+load_offset=0x00100000
