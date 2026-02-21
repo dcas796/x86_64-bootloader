@@ -1,0 +1,13 @@
+CompileFlags:
+    Compiler: "x86_64-elf-gcc"
+    Add: [
+        "-xc",
+        "-std=c23",
+        "-ffreestanding",
+        "-fno-builtin",
+        "-nostdlib",
+        "-nostdinc",
+        "-Wall",
+        "-Wextra",
+        "-I${PROJECT_DIR}/include"
+    ]
