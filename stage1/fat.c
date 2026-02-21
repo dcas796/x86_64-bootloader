@@ -86,7 +86,7 @@ void get_short_name(const fat_dirent_t *dir, char name[9]) {
  */
 void get_short_extension(const fat_dirent_t *dir, char ext[4]) {
     int i = 8;
-    while (i <= 11 && dir->name[i] != 0x20) {
+    while (i < 11 && dir->name[i] != 0x20) {
         ext[i - 8] = dir->name[i];
         ++i;
     }
