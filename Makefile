@@ -35,7 +35,7 @@ qemu-debug: build
 	qemu-system-x86_64 -drive format=raw,file=$(BOOT_IMG) -s -S -monitor stdio
 
 qemu-debug-32: build
-	qemu-system-i386 -drive format=raw,file=$(BOOT_IMG) -s -S -monitor stdio
+	qemu-system-i386 -drive format=raw,file=$(BOOT_IMG) -gdb tcp::9000 -S -monitor stdio
 
 $(BOOT_IMG): $(STAGE0_BIN) $(STAGE1_BIN)
 	$(PYTHON) $(SCRIPTS_DIR)/create_boot_img.py $@ $^
