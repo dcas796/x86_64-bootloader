@@ -26,7 +26,7 @@ typedef struct PACKED {
     uint16_t num_heads;
     uint32_t hidden_sectors;
     uint32_t total_sectors_32;
-} fat_bpb_common_t;
+} fat_bpb_t;
 
 typedef struct PACKED {
     uint8_t  drive_number;
@@ -35,7 +35,7 @@ typedef struct PACKED {
     uint32_t volume_id;
     uint8_t  volume_label[11];
     uint8_t  file_system_type[8];
-} fat_bpb_extended_fat12_16_t;
+} fat_bpb_ext_12_16_t;
 
 typedef struct PACKED {
     uint32_t  fat_size_32;
@@ -51,7 +51,7 @@ typedef struct PACKED {
     uint32_t  volume_id;
     uint8_t   volume_label[11];
     uint8_t   file_system_type[8];
-} fat_bpb_extended_fat32_t;
+} fat_bpb_ext_32_t;
 
 typedef struct PACKED {
     uint8_t  name[11];
@@ -99,13 +99,19 @@ typedef enum {
     FAT_TYPE_32
 } fat_type_t;
 
+typedef union {
+    fat_bpb_ext_12_16_t _12_16;
+    fat_bpb_ext_32_t _32;
+} fat_bpb_ext_t;
+
 typedef struct PACKED {
     fat_type_t type;
-    fat_bpb_common_t bpb;
-    union {
-        fat_bpb_extended_fat12_16_t _12_16;
-        fat_bpb_extended_fat32_t _32;
-    } bpb_ext;
+    uint32_t first_data_sector;
+    uint32_t total_sectors;
+    uint32_t cluster_count;
+    uint32_t fat_size;
+    fat_bpb_t bpb;
+    fat_bpb_ext_t bpb_ext;
 } fat_t;
 
 /* === PUBLIC API === */
@@ -113,6 +119,6 @@ typedef struct PACKED {
 bool is_dir_free(const fat_dirent_t *dir);
 void get_short_name(const fat_dirent_t *dir, char name[FAT_MAX_LENGTH_SHORT_NAME + 1]);
 void get_short_extension(const fat_dirent_t *dir, char ext[FAT_MAX_LENGTH_SHORT_EXTENSION + 1]);
-disk_status_t fat_mount(fat_t *fat, uint8_t drive_num);
+disk_status_t fat_mount(fat_t *fat_out, uint8_t drive_num);
 
 #endif

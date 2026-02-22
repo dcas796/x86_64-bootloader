@@ -1,49 +1,51 @@
 #include "fat.h"
 #include <memory_map.h>
-#include "mem.h"
 
 /* === PRIVATE FUNCTIONS === */
 
-static uint32_t get_count_of_clusters(const fat_t *fat) {
-    if (fat->bpb.bytes_per_sector == 0) return 0;
-
-    uint32_t root_dir_sectors = (fat->bpb.root_entry_count * 32 + (fat->bpb.bytes_per_sector - 1)) / fat->bpb.bytes_per_sector;
-
-    uint32_t fat_size;
-    if (fat->bpb.fat_size_16 != 0) {
-        fat_size = fat->bpb.fat_size_16;
-    } else {
-        fat_size = fat->bpb_ext._32.fat_size_32;
-    }
-
-    uint32_t total_sectors;
-    if (fat->bpb.total_sectors_16 != 0) {
-        total_sectors = fat->bpb.total_sectors_16;
-    } else {
-        total_sectors = fat->bpb.total_sectors_32;
-    }
-
-    uint32_t data_sectors = total_sectors - (fat->bpb.reserved_sectors + (fat->bpb.num_fats * fat_size) + root_dir_sectors);
-
-    if (fat->bpb.sectors_per_cluster == 0) return 0;
-    return data_sectors / fat->bpb.sectors_per_cluster;
+static uint32_t get_max_valid_cluster_num(uint32_t cluster_count) {
+    return cluster_count + 1;
 }
 
-static uint32_t get_max_valid_cluster_num(const fat_t *fat) {
-    return get_count_of_clusters(fat) + 1;
-}
-
-static fat_type_t get_fat_type(const fat_t *fat) {
-    uint32_t count_of_clusters = get_count_of_clusters(fat);
-
-    if (count_of_clusters < 4085) {
+static fat_type_t get_fat_type(uint32_t cluster_count) {
+    if (cluster_count < 4085) {
         return FAT_TYPE_12;
     }
-    if (count_of_clusters < 65525) {
+    if (cluster_count < 65525) {
         return FAT_TYPE_16;
     }
     return FAT_TYPE_32;
 }
+
+static uint32_t get_count_of_clusters(const fat_bpb_t *bpb, uint32_t total_sectors, uint32_t first_data_sector) {
+    uint32_t data_sectors = total_sectors - first_data_sector;
+
+    if (bpb->sectors_per_cluster == 0) return 0;
+    return data_sectors / bpb->sectors_per_cluster;
+}
+
+static uint32_t get_first_data_sector(const fat_bpb_t *bpb, uint32_t fat_size) {
+    if (bpb->bytes_per_sector == 0) return 0;
+
+    uint32_t root_dir_sectors = (bpb->root_entry_count * 32 + (bpb->bytes_per_sector - 1)) / bpb->bytes_per_sector;
+
+    return bpb->reserved_sectors + bpb->num_fats * fat_size + root_dir_sectors;
+}
+
+static uint32_t get_total_sectors(const fat_bpb_t *bpb) {
+    if (bpb->total_sectors_16 != 0) {
+        return bpb->total_sectors_16;
+    }
+    return bpb->total_sectors_32;
+}
+
+static uint32_t get_fat_size(const fat_bpb_t *bpb, const fat_bpb_ext_t *bpb_ext) {
+    if (bpb->fat_size_16 != 0) {
+        return bpb->fat_size_16;
+    }
+    return bpb_ext->_32.fat_size_32;
+}
+
 
 /* === PUBLIC API === */
 
@@ -102,13 +104,34 @@ void get_short_extension(const fat_dirent_t *dir, char ext[4]) {
  * Returns:
  *   The status of the operation.
  */
-disk_status_t fat_mount(fat_t *fat, uint8_t drive_num) {
+disk_status_t fat_mount(fat_t *fat_out, uint8_t drive_num) {
     /* Store the buffer temporarily in this address */
     uint8_t *buffer = (uint8_t*)FREE_MEM_ADDR;
     disk_status_t status = disk_read(drive_num, 0, 0, buffer, 1);
     if (status != DISK_SUCCESS) return status;
-    memcpy(&fat->bpb, buffer, sizeof(fat->bpb));
-    memcpy(&fat->bpb_ext, buffer + sizeof(fat->bpb), sizeof(fat->bpb_ext));
-    fat->type = get_fat_type(fat);
+
+    typedef struct PACKED {
+        fat_bpb_t bpb;
+        fat_bpb_ext_t bpb_ext;
+    } _bpb_complete_t;
+
+    auto temp = (const _bpb_complete_t*)buffer;
+
+    uint32_t fat_size = get_fat_size(&temp->bpb, &temp->bpb_ext);
+    uint32_t total_sectors = get_total_sectors(&temp->bpb);
+    uint32_t first_data_sector = get_first_data_sector(&temp->bpb, fat_size);
+    uint32_t cluster_count = get_count_of_clusters(&temp->bpb, total_sectors, first_data_sector);
+    uint32_t type = get_fat_type(cluster_count);
+
+    *fat_out = (fat_t){
+        .type = type,
+        .first_data_sector = first_data_sector,
+        .total_sectors = total_sectors,
+        .cluster_count = cluster_count,
+        .fat_size = fat_size,
+        .bpb = temp->bpb,
+        .bpb_ext = temp->bpb_ext,
+    };
+
     return DISK_SUCCESS;
 }
