@@ -103,9 +103,9 @@ typedef struct PACKED {
     fat_type_t type;
     fat_bpb_common_t bpb;
     union {
-        fat_bpb_extended_fat12_16_t bpb_ext_12_16;
-        fat_bpb_extended_fat32_t bpb_ext_32;
-    };
+        fat_bpb_extended_fat12_16_t _12_16;
+        fat_bpb_extended_fat32_t _32;
+    } bpb_ext;
 } fat_t;
 
 /* === PUBLIC API === */
@@ -113,6 +113,6 @@ typedef struct PACKED {
 bool is_dir_free(const fat_dirent_t *dir);
 void get_short_name(const fat_dirent_t *dir, char name[FAT_MAX_LENGTH_SHORT_NAME + 1]);
 void get_short_extension(const fat_dirent_t *dir, char ext[FAT_MAX_LENGTH_SHORT_EXTENSION + 1]);
-disk_status_t fat_from_drive(uint8_t drive_num, fat_t *fat);
+disk_status_t fat_mount(fat_t *fat, uint8_t drive_num);
 
 #endif
