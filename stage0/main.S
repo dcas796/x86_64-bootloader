@@ -27,7 +27,7 @@ BPB_RsvdSecCnt:
 .section .text
 .globl _start
 _start:
-    /* clear interrupts, we don't want anyone messing this */
+    /* clear interrupts, we do not want anyone messing this */
     cli
 
     /* set up the segment registers */
