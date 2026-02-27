@@ -6,6 +6,7 @@
 #include "mem.h"
 
 extern uint8_t boot_drive;
+extern void enable_unreal_mode();
 
 void main() {
     puts("stage2\r\n");
@@ -29,7 +30,7 @@ void main() {
     char volume_label[12];
     switch (fat.type) {
         case FAT_TYPE_12:
-            puts("FAT12, ");
+            puts("FAT12");
             memcpy(volume_label, &fat.bpb_ext._12_16.volume_label, sizeof(volume_label));
             break;
         case FAT_TYPE_16:
