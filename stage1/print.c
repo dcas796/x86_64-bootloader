@@ -2,13 +2,9 @@
 
 void putc(char c) {
     __asm__ volatile (
-        "movb $0x0e, %%ah\n"
-        "movb %0, %%al\n"
-        "xorb %%bh, %%bh\n"
         "int $0x10\n"
         :
-        : "r" (c)
-        : "ax", "bx"
+        : "a" (0x0e << 8 | c), "b" (0)
     );
 }
 

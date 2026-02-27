@@ -26,14 +26,9 @@ disk_status_t disk_read(uint8_t drive_number, uint32_t lba_low, uint32_t lba_hig
     uint8_t return_code;
 
     __asm__ volatile (
-        "movb $0x42, %%ah\n"
-        "movb %2, %%dl\n"
-        "movw %3, %%si\n"
         "int $0x13\n"
-        "movb %%ah, %1"
-        : "=@ccc" (has_error), "=r" (return_code)
-        : "r" (drive_number), "r" ((uint16_t)((uint32_t)&dap & 0xffff)) /* this is to shut up the compiler */
-        : "ax", "dx", "si"
+        : "=@ccc" (has_error), "=a" (return_code)
+        : "a" (0x42 << 8), "d" (drive_number), "S" ((uint16_t)((uint32_t)&dap & 0xffff)) /* this is to shut up the compiler */
     );
 
     return has_error ? (disk_status_t)return_code : DISK_SUCCESS;
