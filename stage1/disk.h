@@ -33,7 +33,6 @@ typedef enum {
 } disk_status_t;
 
 const char *disk_status_to_str(disk_status_t status);
-disk_status_t disk_read(uint8_t drive_number, uint64_t lba, uint8_t *buffer, uint32_t sector_count);
-
+disk_status_t disk_read(uint8_t drive_number, uint64_t lba, uint8_t *buffer, uint16_t sector_count);
 
 #endif

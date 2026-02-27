@@ -9,7 +9,7 @@ typedef struct PACKED {
     uint64_t lba;
 } dap_t;
 
-disk_status_t disk_read(uint8_t drive_number, uint64_t lba, uint8_t *buffer, uint32_t sector_count) {
+disk_status_t disk_read(uint8_t drive_number, uint64_t lba, uint8_t *buffer, uint16_t sector_count) {
     uint32_t addr = (uint32_t)buffer;
     dap_t dap = {
         .size = 0x10,
