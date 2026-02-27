@@ -8,7 +8,7 @@ import subprocess
 SECTOR_SIZE = 512
 BPB_RSVD_SEC_CNT_OFFSET = 0x0E
 BPB_END_OFFSET = 90
-
+VOLUME_NAME = "Pablo Motos"
 
 def run(cmd: list[str]) -> None:
     subprocess.run(cmd, check=True)
@@ -105,7 +105,7 @@ def main() -> None:
         f.write(b"\x00")
 
     ensure_tool("mkfs.fat")
-    run(["mkfs.fat", "-R", str(reserved_sectors), "-S", str(SECTOR_SIZE), boot_img])
+    run(["mkfs.fat", "-R", str(reserved_sectors), "-S", str(SECTOR_SIZE), "-n", VOLUME_NAME, boot_img])
 
 
     with open(boot_img, "r+b") as f:
