@@ -6,11 +6,10 @@ typedef struct PACKED {
     uint16_t num_sect;
     uint16_t buf_offset;
     uint16_t buf_segment;
-    uint32_t lba_low;
-    uint32_t lba_high;
+    uint64_t lba;
 } dap_t;
 
-disk_status_t disk_read(uint8_t drive_number, uint32_t lba_low, uint32_t lba_high, uint8_t *buffer, uint32_t sector_count) {
+disk_status_t disk_read(uint8_t drive_number, uint64_t lba, uint8_t *buffer, uint32_t sector_count) {
     uint32_t addr = (uint32_t)buffer;
     dap_t dap = {
         .size = 0x10,
@@ -18,8 +17,7 @@ disk_status_t disk_read(uint8_t drive_number, uint32_t lba_low, uint32_t lba_hig
         .num_sect = sector_count,
         .buf_offset = (uint16_t)(addr & 0x0f),
         .buf_segment = (uint16_t)(addr >> 4),
-        .lba_low = lba_low,
-        .lba_high = lba_high
+        .lba = lba
     };
 
     bool has_error;
