@@ -1,6 +1,6 @@
 #include <memory_map.h>
 
-.code16
+.code16gcc /* this is to be able to call C functions from here */
 .org 0
 
 .extern __stage1_end
