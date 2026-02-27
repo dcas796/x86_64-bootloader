@@ -13,7 +13,9 @@ _start:
     popw %ax
     movb %al, boot_drive
     /* set up the stack */
-    movw $STAGE1_STACK_BASE, %sp
+    movw $STAGE1_STACK_TOP, %sp
+    movw $STAGE1_STACK_BASE, %bp
+jump_c:
     /* we are ready to call C */
     call main
 loop:
