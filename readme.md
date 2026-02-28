@@ -20,8 +20,10 @@ The `make` command will write a FAT formatted disk image to `./build/boot.img` w
 
 The file consists of a list of key-value pairs, in the form of `key=value`, separated by newlines. The possible config parameters are:
 
-- `boot_binary=[filepath]`, where `filepath` is the absolute path of the binary to load and execute.
+- `boot_binary=[filepath]`, where `filepath` is the absolute path of the binary to load and execute (no LFN support, yet).
 - `load_offset=[offset]`, where `offset` is the memory address where the `boot_binary` will be loaded into.
+
+**Note:** this file needs to be less than or equal to 1KiB (1024 bytes) in size
 
 ## Boot process
 

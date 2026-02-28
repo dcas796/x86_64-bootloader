@@ -1,14 +1,14 @@
 #include "string.h"
 #include <types.h>
 
-unsigned int strlen(const char *str) {
-    unsigned int len = 0;
+size_t strlen(const char *str) {
+    size_t len = 0;
     while (*str++) ++len;
     return len;
 }
 
 static const char alphabet[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-char *itoa(int value, char *str, unsigned int base) {
+char *itoa(int value, char *str, uint8_t base) {
     if (str == NULL || base > sizeof(alphabet)) return NULL;
 
     bool is_neg = false;
@@ -40,11 +40,11 @@ char *itoa(int value, char *str, unsigned int base) {
     return str;
 }
 
-char *strnrev(char *str, unsigned int size) {
-    if (size == 0) return str;
+char *strnrev(char *str, size_t n) {
+    if (n == 0) return str;
 
-    int i = 0;
-    int j = size - 1;
+    size_t i = 0;
+    size_t j = n - 1;
     while (i < j) {
         /* xor swap */
         str[i] ^= str[j];
@@ -56,3 +56,16 @@ char *strnrev(char *str, unsigned int size) {
 
     return str;
 }
+
+bool streq(const char *s1, const char *s2) {
+    uint32_t i = 0;
+    while (s1[i] != '\0' && s2[i] != '\0' && s1[i] == s2[i]) {
+        ++i;
+    }
+    return s1[i] == s2[i];
+}
+
+char toupper(char c) {
+    return 'a' <= c && c <= 'z' ? c - 32 : c;
+}
+
