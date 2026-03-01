@@ -4,6 +4,7 @@
 #include "fat.h"
 #include "disk.h"
 #include "mem.h"
+#include "options_parser.h"
 
 extern uint8_t boot_drive;
 extern void enable_unreal_mode();
@@ -56,10 +57,10 @@ void main() {
 
     fat_file_t options_txt;
     puts("Opening file: " BOOT_OPTIONS_TXT "\r\n");
-    fat_result_t result = fat_open(&fat, BOOT_OPTIONS_TXT, &options_txt);
-    if (result != FAT_SUCCESS) {
+    fat_result_t fat_result = fat_open(&fat, BOOT_OPTIONS_TXT, &options_txt);
+    if (fat_result != FAT_SUCCESS) {
         puts("Error opening file. Reason: ");
-        puts(fat_result_to_str(result));
+        puts(fat_result_to_str(fat_result));
         puts("\r\n");
         return;
     }
@@ -70,15 +71,41 @@ void main() {
     }
 
     puts("Reading file: " BOOT_OPTIONS_TXT "\r\n");
-    char output_txt_contents[BOOT_OPTIONS_TXT_MAX_LEN + 1];
-    result = fat_read(&fat, &options_txt, 0, options_txt.entry.file_size, output_txt_contents);
-    if (result != FAT_SUCCESS) {
+    char options_txt_contents[BOOT_OPTIONS_TXT_MAX_LEN + 1];
+    fat_result = fat_read(&fat, &options_txt, 0, options_txt.entry.file_size, options_txt_contents);
+    if (fat_result != FAT_SUCCESS) {
         puts("Error reading file. Reason: ");
-        puts(fat_result_to_str(result));
+        puts(fat_result_to_str(fat_result));
         puts("\r\n");
         return;
     }
-    output_txt_contents[options_txt.entry.file_size] = '\0';
-    puts(output_txt_contents);
+    options_txt_contents[options_txt.entry.file_size] = '\0';
+
+    puts("Parsing file...\r\n");
+    boot_options_t boot_options;
+    parser_result_t parser_result = parse(options_txt_contents, &boot_options);
+    if (parser_result != PARSER_SUCCESS) {
+        puts("Error parsing file. Reason: ");
+        puts(parser_result_to_str(parser_result));
+        puts("\r\n");
+        return;
+    }
+    puts("Boot binary path: ");
+    puts(boot_options.boot_binary);
+    puts("\r\nLoad offset: 0x");
+    char load_offset_str[9];
+    puts(itoa(boot_options.load_offset, load_offset_str, 16));
     puts("\r\n");
+
+    puts("Opening boot binary...\r\n");
+    fat_file_t boot_binary_file;
+    fat_result = fat_open(&fat, boot_options.boot_binary, &boot_binary_file);
+    if (fat_result != FAT_SUCCESS) {
+        puts("Error opening file. Reason: ");
+        puts(fat_result_to_str(fat_result));
+        puts("\r\n");
+        return;
+    }
+
+    puts("Parsing ELF...\r\n");
 }
