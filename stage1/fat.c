@@ -389,36 +389,37 @@ fat_result_t fat_open(const fat_t *fat, char *path, fat_file_t* file_out) {
     if ((current_directory.attr & FAT_ATTR_DIRECTORY) != 0) return FAT_IS_DIRECTORY;
 
     *file_out = (fat_file_t){
+        .fat = fat,
         .entry = current_directory,
     };
 
     return FAT_SUCCESS;
 }
 
-fat_result_t fat_read(const fat_t *fat, const fat_file_t *file, uint32_t offset, uint32_t length, void *buffer) {
-    uint32_t bytes_per_cluster = fat->bpb.sectors_per_cluster * fat->bpb.bytes_per_sector;
+fat_result_t fat_read(const fat_file_t *file, uint32_t offset, uint32_t length, void *buffer) {
+    uint32_t bytes_per_cluster = file->fat->bpb.sectors_per_cluster * file->fat->bpb.bytes_per_sector;
 
     uint32_t cluster_offset = offset / bytes_per_cluster;
     uint32_t start_cluster = (file->entry.fst_clus_hi << 16) | file->entry.fst_clus_lo;
 
     for (uint32_t i = 0; i < cluster_offset; ++i) {
-        fat_cluster_result_t cluster_result = fat_next_not_bad(fat, &start_cluster);
+        fat_cluster_result_t cluster_result = fat_next_not_bad(file->fat, &start_cluster);
         if (cluster_result != FAT_CLUSTER_VALID) return FAT_OUT_OF_FILE_BOUNDS;
     }
 
     uint32_t current_cluster = start_cluster;
 
     while (length != 0) {
-        uint32_t sector_offset = (offset % bytes_per_cluster) / fat->bpb.bytes_per_sector;
+        uint32_t sector_offset = (offset % bytes_per_cluster) / file->fat->bpb.bytes_per_sector;
         uint32_t length_to_read = min(length, bytes_per_cluster);
-        uint16_t sectors_to_read = (uint16_t)((length_to_read + fat->bpb.bytes_per_sector - 1) / fat->bpb.bytes_per_sector);
-        uint32_t byte_offset = offset % fat->bpb.bytes_per_sector;
+        uint16_t sectors_to_read = (uint16_t)((length_to_read + file->fat->bpb.bytes_per_sector - 1) / file->fat->bpb.bytes_per_sector);
+        uint32_t byte_offset = offset % file->fat->bpb.bytes_per_sector;
 
-        bool use_temp_buffer = byte_offset != 0 || length_to_read % fat->bpb.bytes_per_sector != 0;
+        bool use_temp_buffer = byte_offset != 0 || length_to_read % file->fat->bpb.bytes_per_sector != 0;
         uint8_t *temp_buffer = use_temp_buffer ? (uint8_t*)FREE_MEM_ADDR : buffer;
         disk_status_t status = disk_read(
-            fat->drive_number,
-            cluster_to_lba(fat, current_cluster) + sector_offset,
+            file->fat->drive_number,
+            cluster_to_lba(file->fat, current_cluster) + sector_offset,
             temp_buffer,
             sectors_to_read
             );
@@ -433,7 +434,7 @@ fat_result_t fat_read(const fat_t *fat, const fat_file_t *file, uint32_t offset,
         length -= length_to_read;
 
         if (length != 0) {
-            fat_cluster_result_t cluster_result = fat_next_not_bad(fat, &start_cluster);
+            fat_cluster_result_t cluster_result = fat_next_not_bad(file->fat, &start_cluster);
             if (cluster_result != FAT_CLUSTER_VALID) return FAT_OUT_OF_FILE_BOUNDS;
         }
     }

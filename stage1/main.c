@@ -72,7 +72,7 @@ void main() {
 
     puts("Reading file: " BOOT_OPTIONS_TXT "\r\n");
     char options_txt_contents[BOOT_OPTIONS_TXT_MAX_LEN + 1];
-    fat_result = fat_read(&fat, &options_txt, 0, options_txt.entry.file_size, options_txt_contents);
+    fat_result = fat_read(&options_txt, 0, options_txt.entry.file_size, options_txt_contents);
     if (fat_result != FAT_SUCCESS) {
         puts("Error reading file. Reason: ");
         puts(fat_result_to_str(fat_result));

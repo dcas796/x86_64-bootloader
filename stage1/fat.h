@@ -101,10 +101,6 @@ typedef enum {
     FAT_TYPE_32
 } fat_type_t;
 
-typedef struct PACKED {
-    fat_dirent_t entry;
-} fat_file_t;
-
 typedef union {
     fat_bpb_ext_12_16_t _12_16;
     fat_bpb_ext_32_t _32;
@@ -123,6 +119,11 @@ typedef struct PACKED {
     fat_bpb_ext_t bpb_ext;
 } fat_t;
 
+typedef struct PACKED {
+    const fat_t *fat;
+    fat_dirent_t entry;
+} fat_file_t;
+
 typedef enum {
     FAT_SUCCESS,
     FAT_UNKNOWN_FAT_TYPE,
@@ -138,7 +139,7 @@ typedef enum {
 
 disk_status_t fat_mount(fat_t *fat_out, uint8_t drive_num);
 fat_result_t fat_open(const fat_t *fat, char *path, fat_file_t* file_out);
-fat_result_t fat_read(const fat_t *fat, const fat_file_t *file, uint32_t offset, uint32_t length, void *buffer);
+fat_result_t fat_read(const fat_file_t *file, uint32_t offset, uint32_t length, void *buffer);
 
 const char *fat_result_to_str(fat_result_t result);
 
