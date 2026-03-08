@@ -3,11 +3,11 @@
 #include "string.h"
 #include "fat.h"
 #include "disk.h"
+#include "elf.h"
 #include "mem.h"
 #include "options_parser.h"
 
 extern uint8_t boot_drive;
-extern void enable_unreal_mode();
 
 #define BOOT_OPTIONS_TXT            "/boot/options.txt"
 #define BOOT_OPTIONS_TXT_MAX_LEN    1024
@@ -108,4 +108,24 @@ void main() {
     }
 
     puts("Parsing ELF...\r\n");
+    elf_t elf;
+    elf_result_t elf_result = elf_open(&elf, &boot_binary_file);
+    if (elf_result != ELF_SUCCESS) {
+        puts("Error opening file. Reason: ");
+        puts(elf_result_to_str(elf_result));
+        puts("\r\n");
+        return;
+    }
+
+    puts("Loading ELF...\r\n");
+    elf_result = elf_load(&elf);
+    if (elf_result != ELF_SUCCESS) {
+        puts("Error loading file. Reason: ");
+        puts(elf_result_to_str(elf_result));
+        puts("\r\n");
+        return;
+    }
+
+    ((void(*)())elf.header.entry_point)();
+    puts("Switching to protected mode & transferring control to boot binary...\r\n");
 }

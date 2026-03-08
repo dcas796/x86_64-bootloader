@@ -15,6 +15,7 @@ _start:
     /* set up the stack */
     movw $STAGE1_STACK_TOP, %sp
     movw $STAGE1_STACK_BASE, %bp
+    /* TODO: enable unreal mode */
 jump_c:
     /* we are ready to call C */
     call main

@@ -1,0 +1,70 @@
+#include "elf.h"
+
+#include "mem.h"
+#include "string.h"
+
+/* === CONSTANTS === */
+
+static const char ELF_MAGIC[] = "\x7F" "ELF";
+
+/* === PRIVATE FUNCTIONS === */
+
+static elf_result_t validate_header(const elf_header_t *header) {
+    char magic[sizeof(header->magic) + 1];
+    memcpy(magic, header->magic, sizeof(header->magic));
+    magic[sizeof(header->magic)] = '\0';
+
+    if (!streq(ELF_MAGIC, magic)) return ELF_NOT_RECOGNIZED;
+
+    if (header->efi_class != ELF_CLASS_32) return ELF_UNSUPPORTED_ARCH;
+    if (header->machine != ELF_MACHINE_386 && header->machine != ELF_MACHINE_X86_64) return ELF_UNSUPPORTED_ARCH;
+    if (header->type != ELF_TYPE_EXEC ||
+        header->program_entry_count == 0 ||
+        header->program_header_table == 0 ||
+        header->entry_point == 0) return ELF_NOT_EXECUTABLE;
+
+    return ELF_SUCCESS;
+}
+
+/* === PUBLIC API === */
+
+elf_result_t elf_open(elf_t *elf, const fat_file_t *file) {
+    elf->file = file;
+
+    fat_result_t result = fat_read(file, 0, sizeof(elf->header), &elf->header);
+    if (result != FAT_SUCCESS) return ELF_FAT_ERROR;
+
+    return validate_header(&elf->header);
+}
+
+elf_result_t elf_load(const elf_t *elf) {
+    uint16_t entry_count = elf->header.program_entry_count;
+    uint16_t entry_size = elf->header.program_entry_size;
+    uint32_t offset = elf->header.program_header_table;
+
+    for (uint16_t i = 0; i < entry_count; ++i) {
+        elf_program_header_t prog_header;
+        fat_read(elf->file, offset + entry_size * i, entry_size, &prog_header);
+        if (prog_header.p_type != ELF_PT_LOAD) continue;
+        fat_read(elf->file, prog_header.p_offset, prog_header.p_filesz, (void*)prog_header.p_vaddr);
+    }
+
+    return ELF_SUCCESS;
+}
+
+const char *elf_result_to_str(elf_result_t result) {
+    switch (result) {
+        case ELF_SUCCESS:
+            return "Success";
+        case ELF_NOT_RECOGNIZED:
+            return "Not recognized as valid ELF";
+        case ELF_UNSUPPORTED_ARCH:
+            return "Unsupported architecture";
+        case ELF_NOT_EXECUTABLE:
+            return "Not executable";
+        case ELF_FAT_ERROR:
+            return "FAT error";
+        default:
+            return "Unknown";
+    }
+}
