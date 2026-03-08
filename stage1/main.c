@@ -126,6 +126,7 @@ void main() {
         return;
     }
 
-    ((void(*)())elf.header.entry_point)();
     puts("Switching to protected mode & transferring control to boot binary...\r\n");
+    ((void(*)(void(*)(const char *)))elf.header.entry_point)(puts);
+    puts("Returned from boot\r\n");
 }

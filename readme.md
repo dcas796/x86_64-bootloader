@@ -24,10 +24,12 @@ The `make` command will write a FAT formatted disk image to `./build/boot.img` w
 The file consists of a list of key-value pairs, in the form of `key=value`, separated by newlines. The possible config
 parameters are:
 
-- `boot_binary=[filepath]`, where `filepath` is the absolute path of the binary to load and execute. No long filename
+- `boot_binary=[filepath]`, where `filepath` is the absolute path of ELF executable to load and execute. No long filename
 support, yet, so keep in mind that long filenames will be truncated into 8.3 format.
 
-**Note:** Due to memory limitations, this file needs to be less than or equal to 1KiB (1024 bytes) in size.
+**Notes:** 
+- Due to memory limitations, this file needs to be less than or equal to 1KiB (1024 bytes) in size.
+- The ELF cannot load segments to memory below 1MiB, as there are important BIOS and bootloader code and data.
 
 ## Debugging
 
