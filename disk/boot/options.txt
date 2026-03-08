@@ -1,2 +1,1 @@
-boot_binary=/boot/kernel.elf
-load_offset=0x00100000
+boot_binary=/boot/example.elf
