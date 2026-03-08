@@ -19,10 +19,6 @@ typedef enum {
 
 /* === PRIVATE FUNCTIONS === */
 
-static uint32_t get_max_valid_cluster_num(uint32_t cluster_count) {
-    return cluster_count + 1;
-}
-
 static fat_type_t get_fat_type(uint32_t cluster_count) {
     if (cluster_count < 4085) {
         return FAT_TYPE_12;
