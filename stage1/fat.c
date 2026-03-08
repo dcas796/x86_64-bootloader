@@ -434,7 +434,7 @@ fat_result_t fat_read(const fat_file_t *file, uint32_t offset, uint32_t length, 
         length -= length_to_read;
 
         if (length != 0) {
-            fat_cluster_result_t cluster_result = fat_next_not_bad(file->fat, &start_cluster);
+            fat_cluster_result_t cluster_result = fat_next_not_bad(file->fat, &current_cluster);
             if (cluster_result != FAT_CLUSTER_VALID) return FAT_OUT_OF_FILE_BOUNDS;
         }
     }
