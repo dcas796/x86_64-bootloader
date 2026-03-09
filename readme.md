@@ -31,9 +31,18 @@ support, yet, so keep in mind that long filenames will be truncated into 8.3 for
 - Due to memory limitations, this file needs to be less than or equal to 1KiB (1024 bytes) in size.
 - The ELF cannot load segments to memory below 1MiB, as there are important BIOS and bootloader code and data.
 
+### `boot_binary` entry point
+
+The bootloader expects the ELF entry point to have the following signature:
+```c++
+void __attribute__((noreturn)) entry(sysinfo_t info);
+```
+where `sysinfo_t` is a struct that contains information about the system. Its header file is located in 
+`include/sysinfo.h`.
+
 ## Debugging
 
-### Prerequisistes
+### Prerequisites
 
 To debug this bootloader you will need additional tools:
 - QEMU
