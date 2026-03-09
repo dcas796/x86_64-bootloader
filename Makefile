@@ -40,10 +40,10 @@ qemu-debug-32: build
 $(BOOT_IMG): $(STAGE0_BIN) $(STAGE1_BIN)
 	$(PYTHON) $(SCRIPTS_DIR)/create_boot_img.py $@ $^
 
-$(STAGE0_BIN):
-	$(MAKE) -C $(STAGE0_DIR)
-	cp $(STAGE0_DIR)/build/stage0.bin $@
+$(STAGE0_BIN): $(STAGE0_DIR) build-dir
+	$(MAKE) -C $<
+	cp $</build/stage0.bin $@
 
-$(STAGE1_BIN):
-	$(MAKE) -C $(STAGE1_DIR)
-	cp $(STAGE1_DIR)/build/stage1.bin $@
+$(STAGE1_BIN): $(STAGE1_DIR) build-dir
+	$(MAKE) -C $<
+	cp $</build/stage1.bin $@
