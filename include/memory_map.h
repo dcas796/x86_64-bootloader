@@ -12,4 +12,6 @@
 
 #define FREE_MEM_ADDR       0x80000     /* literally out of my butt */
 
+#define REAL_MODE_LIMIT     ((0xffff << 4) + 0xffff)
+
 #endif

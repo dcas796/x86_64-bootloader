@@ -15,7 +15,7 @@ _start:
     /* set up the stack */
     movw $STAGE1_STACK_TOP, %sp
     movw $STAGE1_STACK_BASE, %bp
-    /* TODO: enable unreal mode */
+    call enable_unreal_mode
 jump_c:
     /* we are ready to call C */
     call main
@@ -25,26 +25,28 @@ loop:
 
 .globl enable_unreal_mode
 enable_unreal_mode:
-    pushw %ax
     cli
+    pushw %ax
+    pushw %bx
+    pushw %ds
     lgdt gdtr
-    /* enable 32-bit protected mode */
-    mov %cr0, %eax
+
+    movl  %cr0, %eax
     orb $1, %al
-    mov %eax, %cr0
+    movl %eax, %cr0
+    ljmp $0x8, $pmode
+pmode:
+    movw $0x10, %bx
+    movw %bx, %ds
 
-    /* data selector */
-    movw $0x10, %ax
-    movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
-
-    /* leave 32-bit protected mode */
-    mov %cr0, %eax
-    and $0xFFFFFFFE, %eax
-    mov %eax, %cr0
+    andb $0xFE, %al
+    movl %eax, %cr0
+    ljmp $0x0, $unreal
+unreal:
+    popw %ds
+    popw %bx
     popw %ax
+    sti
     ret
 
 .section .data
@@ -55,26 +57,24 @@ boot_drive:
 
 gdtr:
    .word (gdt_end - gdt - 1)
-   .word gdt
-   .word 0
+   .long gdt
 
 gdt:
 gdt_null:
-    .quad 0
     .quad 0
 gdt_code:
     .word 0xffff
     .word 0
     .byte 0
-    .byte 0b10011011
-    .byte 0b11000000
+    .byte 0b10011010
+    .byte 0b00000000
     .byte 0
 gdt_data:
     .word 0xffff
     .word 0
     .byte 0
-    .byte 0b10010011
-    .byte 0b11000000
+    .byte 0b10010010
+    .byte 0b11001111
     .byte 0
 gdt_end:
 

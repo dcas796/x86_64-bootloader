@@ -411,7 +411,9 @@ fat_result_t fat_read(const fat_file_t *file, uint32_t offset, uint32_t length, 
         uint16_t sectors_to_read = (uint16_t)((length_to_read + file->fat->bpb.bytes_per_sector - 1) / file->fat->bpb.bytes_per_sector);
         uint32_t byte_offset = offset % file->fat->bpb.bytes_per_sector;
 
-        bool use_temp_buffer = byte_offset != 0 || length_to_read % file->fat->bpb.bytes_per_sector != 0;
+        bool use_temp_buffer = byte_offset != 0
+            || length_to_read % file->fat->bpb.bytes_per_sector != 0
+            || (uint32_t)(buffer + length_to_read) > REAL_MODE_LIMIT;
         uint8_t *temp_buffer = use_temp_buffer ? (uint8_t*)FREE_MEM_ADDR : buffer;
         disk_status_t status = disk_read(
             file->fat->drive_number,
