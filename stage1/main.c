@@ -6,6 +6,8 @@
 #include "elf.h"
 #include "mem.h"
 #include "options_parser.h"
+#include "prot.h"
+#include "sysinfo_impl.h"
 
 extern uint8_t boot_drive;
 
@@ -126,7 +128,11 @@ void main() {
         return;
     }
 
+    puts("Extracting sysinfo...\r\n");
+    sysinfo_t sysinfo;
+    get_sysinfo(&sysinfo, boot_drive);
+
     puts("Switching to protected mode & transferring control to boot binary...\r\n");
-    ((void(*)(void(*)(const char *)))elf.header.entry_point)(puts);
+    transfer_control((void*)elf.header.entry_point, &sysinfo);
     puts("Returned from boot\r\n");
 }

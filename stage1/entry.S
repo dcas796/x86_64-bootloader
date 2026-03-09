@@ -29,7 +29,7 @@ enable_unreal_mode:
     pushl %eax
     pushw %bx
     pushw %ds
-    lgdt gdtr
+    lgdt gdtr_unreal
 
     movl  %cr0, %eax
     orb $1, %al
@@ -55,6 +55,30 @@ unreal:
 boot_drive:
     .byte 0
 
+gdtr_unreal:
+   .word (gdt_unreal_end - gdt_unreal - 1)
+   .long gdt_unreal
+
+gdt_unreal:
+gdt_unreal_null:
+    .quad 0
+gdt_unreal_code:
+    .word 0xffff
+    .word 0
+    .byte 0
+    .byte 0b10011010
+    .byte 0b00000000
+    .byte 0
+gdt_unreal_data:
+    .word 0xffff
+    .word 0
+    .byte 0
+    .byte 0b10010010
+    .byte 0b11001111
+    .byte 0
+gdt_unreal_end:
+
+.globl gdtr
 gdtr:
    .word (gdt_end - gdt - 1)
    .long gdt
@@ -67,7 +91,7 @@ gdt_code:
     .word 0
     .byte 0
     .byte 0b10011010
-    .byte 0b00000000
+    .byte 0b11001111
     .byte 0
 gdt_data:
     .word 0xffff
