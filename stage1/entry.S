@@ -26,7 +26,7 @@ loop:
 .globl enable_unreal_mode
 enable_unreal_mode:
     cli
-    pushw %ax
+    pushl %eax
     pushw %bx
     pushw %ds
     lgdt gdtr
@@ -45,7 +45,7 @@ pmode:
 unreal:
     popw %ds
     popw %bx
-    popw %ax
+    popl %eax
     sti
     ret
 
