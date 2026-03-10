@@ -406,8 +406,9 @@ fat_result_t fat_read(const fat_file_t *file, uint32_t offset, uint32_t length, 
     uint32_t current_cluster = start_cluster;
 
     while (length != 0) {
-        uint32_t sector_offset = (offset % bytes_per_cluster) / file->fat->bpb.bytes_per_sector;
-        uint32_t length_to_read = min(length, bytes_per_cluster);
+        uint32_t offset_in_sector = offset % bytes_per_cluster;
+        uint32_t sector_offset = offset_in_sector / file->fat->bpb.bytes_per_sector;
+        uint32_t length_to_read = min(length + offset_in_sector, bytes_per_cluster) - offset_in_sector;
         uint16_t sectors_to_read = (uint16_t)((length_to_read + file->fat->bpb.bytes_per_sector - 1) / file->fat->bpb.bytes_per_sector);
         uint32_t byte_offset = offset % file->fat->bpb.bytes_per_sector;
 
