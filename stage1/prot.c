@@ -36,7 +36,7 @@ void __attribute__((noreturn)) transfer_control(void *entry_point, const sysinfo
         "jmp *%0\n\t"
 
         :
-        : "r"((uint32_t)entry_point), "r"((uint32_t)info), "i"(sizeof(sysinfo_t) / 4), "i"(PROTECTED_MODE_STACK_TOP)
+        : "r"((uint32_t)entry_point), "r"((uint32_t)info), "i"(sizeof(sysinfo_t) / 4), "i"(PROTECTED_MODE_STACK_TOP + sizeof(sysinfo_t) + 1)
         : "eax", "ecx", "esi", "edi", "memory"
     );
     __builtin_unreachable();
