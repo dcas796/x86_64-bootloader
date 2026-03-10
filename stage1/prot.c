@@ -1,5 +1,7 @@
 #include "prot.h"
 
+#include "memory_map.h"
+
 void __attribute__((noreturn)) transfer_control(void *entry_point, const sysinfo_t *info) {
     __asm__ volatile (
         "cli\n\t"
@@ -18,6 +20,8 @@ void __attribute__((noreturn)) transfer_control(void *entry_point, const sysinfo
         "mov %%ax, %%gs\n\t"
         "mov %%ax, %%ss\n\t"
 
+        "mov %3, %%esp\n\t"
+
         /* Copy sysinfo_t by value onto the stack */
         "mov %2, %%ecx\n\t"        /* ecx = sizeof(sysinfo_t) in dwords */
         "sub %%ecx, %%esp\n\t"      /* make room on the stack */
@@ -32,7 +36,7 @@ void __attribute__((noreturn)) transfer_control(void *entry_point, const sysinfo
         "jmp *%0\n\t"
 
         :
-        : "r"((uint32_t)entry_point), "r"((uint32_t)info), "i"(sizeof(sysinfo_t) / 4)
+        : "r"((uint32_t)entry_point), "r"((uint32_t)info), "i"(sizeof(sysinfo_t) / 4), "i"(PROTECTED_MODE_STACK_TOP)
         : "eax", "ecx", "esi", "edi", "memory"
     );
     __builtin_unreachable();

@@ -14,4 +14,6 @@
 
 #define REAL_MODE_LIMIT     ((0xffff << 4) + 0xffff)
 
+#define PROTECTED_MODE_STACK_TOP 0xc00000 /* TODO: please help */
+
 #endif
