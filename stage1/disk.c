@@ -1,5 +1,8 @@
 #include "disk.h"
 
+#include "math.h"
+#include "memory_map.h"
+
 typedef struct PACKED {
     uint8_t  size;      /* must always be 0x10 */
     uint8_t  zero;      /* must always be 0 */
@@ -11,12 +14,15 @@ typedef struct PACKED {
 
 disk_status_t disk_read(uint8_t drive_number, uint64_t lba, uint8_t *buffer, uint16_t sector_count) {
     uint32_t addr = (uint32_t)buffer;
+    if (addr > REAL_MODE_LIMIT) return DISK_ADDR_OVER_REAL_BOUNDARY;
+    uint16_t segment = (uint16_t)min(addr >> 4, 0xffff);
+    uint16_t offset = (uint16_t)(addr - segment * 16);
     dap_t dap = {
         .size = 0x10,
         .zero = 0,
         .num_sect = sector_count,
-        .buf_offset = (uint16_t)(addr & 0x0f),
-        .buf_segment = (uint16_t)(addr >> 4),
+        .buf_offset = offset,
+        .buf_segment = segment,
         .lba = lba
     };
 

@@ -30,6 +30,8 @@ typedef enum {
     DISK_WRITE_FAULT            = 0xcc,
     DISK_STATUS_ERR             = 0xe0,
     DISK_SENSE_OPERATION_FAILED = 0xff,
+
+    DISK_ADDR_OVER_REAL_BOUNDARY,
 } disk_status_t;
 
 const char *disk_status_to_str(disk_status_t status);
