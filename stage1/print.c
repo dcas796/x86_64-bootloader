@@ -13,3 +13,12 @@ void puts(const char *s) {
     while ((c = *s++))
         putc(c);
 }
+
+extern void __attribute__((noreturn)) loop();
+
+void __attribute__((noreturn)) panic(const char *s) {
+    puts("PANIC: ");
+    puts(s);
+    loop();
+}
+

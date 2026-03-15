@@ -19,6 +19,7 @@ _start:
 jump_c:
     /* we are ready to call C */
     call main
+.globl loop
 loop:
     hlt
     jmp loop
