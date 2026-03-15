@@ -7,13 +7,15 @@
 #define STAGE1_OFFSET       0x8000
 #define STAGE1_SEGMENT      0x0000
 #define STAGE1_PHY_ADDR     ((STAGE1_SEGMENT << 4) + STAGE1_OFFSET)
-#define STAGE1_STACK_TOP    STAGE1_OFFSET   /* TODO: I need to do something better */
-#define STAGE1_STACK_BASE   0x7000      /* I'm pulling these values out of my ass */
-
-#define FREE_MEM_ADDR       0x80000     /* literally out of my butt */
+#define STAGE1_STACK_TOP    STAGE1_OFFSET
+#define STAGE1_STACK_BASE   0x7000
 
 #define REAL_MODE_LIMIT     ((0xffff << 4) + 0xffff)
 
-#define PROTECTED_MODE_STACK_TOP 0xc00000 /* TODO: please help */
+#define EXTENDED_STACK_BASE  0x80000
+#define EXTENDED_STACK_LIMIT 0x10000
+
+
+#define PROTECTED_MODE_STACK_TOP 0xc00000 /* TODO: put this at the top of memory */
 
 #endif

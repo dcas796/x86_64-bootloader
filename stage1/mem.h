@@ -4,5 +4,7 @@
 #include <types.h>
 
 void *memcpy(void *dst, const void *src, size_t num);
+void *push(size_t n);
+void pop(size_t n);
 
 #endif

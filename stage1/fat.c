@@ -88,10 +88,15 @@ static fat_cluster_result_t fat_next(const fat_t *fat, uint32_t cluster, uint32_
     uint32_t fat_sector = fat->first_fat_sector + fat_offset / fat->bpb.bytes_per_sector;
     uint32_t ent_offset = fat_offset % fat->bpb.bytes_per_sector;
 
-    auto buffer = (uint8_t*)FREE_MEM_ADDR;
-    /* TODO: cache the FAT? */
-    disk_status_t status = disk_read(fat->drive_number, fat_sector, buffer, 2);
-    if (status != DISK_SUCCESS) return FAT_CLUSTER_DISK_FAILURE;
+    uint8_t sector_count = 2;
+    size_t buffer_size = sector_count * fat->bpb.bytes_per_sector;
+    uint8_t *buffer = push(buffer_size);
+    /* Suggestion: cache the FAT? */
+    disk_status_t status = disk_read(fat->drive_number, fat_sector, buffer, sector_count);
+    if (status != DISK_SUCCESS) {
+        pop(buffer_size);
+        return FAT_CLUSTER_DISK_FAILURE;
+    }
 
     fat_cluster_result_t result = FAT_CLUSTER_VALID;
     switch (fat->type) {
@@ -120,8 +125,11 @@ static fat_cluster_result_t fat_next(const fat_t *fat, uint32_t cluster, uint32_
 
             break;
         default:
+            pop(buffer_size);
             return FAT_CLUSTER_UNKNOWN_TYPE;
     }
+
+    pop(buffer_size);
 
     return result;
 }
@@ -208,13 +216,22 @@ static bool search_root_for_entry(
     const char *name,
     fat_dirent_t *dir_out) {
     uint32_t first_root_dir_sector = fat->first_data_sector - fat->root_dir_sectors;
-    uint8_t *buffer = (uint8_t*)FREE_MEM_ADDR;
 
-    disk_status_t status = disk_read(fat->drive_number, first_root_dir_sector, buffer, fat->root_dir_sectors);
-    if (status != DISK_SUCCESS) return false;
+    uint16_t sector_count = fat->root_dir_sectors;
+    size_t buffer_size = sector_count * fat->bpb.bytes_per_sector;
+    uint8_t *buffer = push(buffer_size);
+    disk_status_t status = disk_read(fat->drive_number, first_root_dir_sector, buffer, sector_count);
+    if (status != DISK_SUCCESS) {
+        pop(buffer_size);
+        return false;
+    }
 
     const fat_dirent_t *entries = (fat_dirent_t*)buffer;
-    return search_for_entry(fat, entries, fat->bpb.root_entry_count, name, dir_out);
+    bool found = search_for_entry(fat, entries, fat->bpb.root_entry_count, name, dir_out);
+
+    pop(buffer_size);
+
+    return found;
 }
 
 static void get_next_segment(char **path, char segment[MAX_NAME_LEN + 1]) {
@@ -290,10 +307,14 @@ void get_short_extension(const fat_dirent_t *dir, char ext[4]) {
  *   The status of the operation.
  */
 disk_status_t fat_mount(fat_t *fat_out, uint8_t drive_num) {
-    /* Store the buffer temporarily in this address */
-    uint8_t *buffer = (uint8_t*)FREE_MEM_ADDR;
-    disk_status_t status = disk_read(drive_num, 0, buffer, 1);
-    if (status != DISK_SUCCESS) return status;
+    uint8_t sector_count = 1;
+    size_t buffer_size = sector_count * 4096; /* let's assume the biggest sector size */
+    uint8_t *buffer = push(buffer_size);
+    disk_status_t status = disk_read(drive_num, 0, buffer, sector_count);
+    if (status != DISK_SUCCESS) {
+        pop(buffer_size);
+        return status;
+    }
 
     typedef struct PACKED {
         fat_bpb_t bpb;
@@ -322,6 +343,8 @@ disk_status_t fat_mount(fat_t *fat_out, uint8_t drive_num) {
         .bpb = temp->bpb,
         .bpb_ext = temp->bpb_ext,
     };
+
+    pop(buffer_size);
 
     return DISK_SUCCESS;
 }
@@ -358,13 +381,18 @@ fat_result_t fat_open(const fat_t *fat, char *path, fat_file_t* file_out) {
         uint32_t current_dir_cluster = (uint32_t)current_directory.fst_clus_hi << 16 | current_directory.fst_clus_lo;
         fat_cluster_result_t cluster_result = FAT_CLUSTER_VALID;
         while (!found && cluster_result == FAT_CLUSTER_VALID) {
-            uint8_t *buffer = (uint8_t*)FREE_MEM_ADDR;
+            uint8_t sector_count = fat->bpb.sectors_per_cluster;
+            size_t buffer_size = sector_count * fat->bpb.bytes_per_sector;
+            uint8_t *buffer = push(buffer_size);
             disk_status_t status = disk_read(
                 fat->drive_number,
                 cluster_to_lba(fat, current_dir_cluster),
                 buffer,
-                fat->bpb.sectors_per_cluster);
-            if (status != DISK_SUCCESS) return FAT_DISK_ERROR;
+                sector_count);
+            if (status != DISK_SUCCESS) {
+                pop(buffer_size);
+                return FAT_DISK_ERROR;
+            }
 
             const fat_dirent_t *entries = (fat_dirent_t*)buffer;
             // uint16_t lfn_buffer[MAX_LFN_LEN + 1];
@@ -375,6 +403,8 @@ fat_result_t fat_open(const fat_t *fat, char *path, fat_file_t* file_out) {
             if (!found) {
                 cluster_result = fat_next_not_bad(fat, &current_dir_cluster);
             }
+
+            pop(buffer_size);
         }
 
         if (!found) return FAT_FILE_NOT_FOUND;
@@ -415,14 +445,17 @@ fat_result_t fat_read(const fat_file_t *file, uint32_t offset, uint32_t length, 
         bool use_temp_buffer = byte_offset != 0
             || length_to_read % file->fat->bpb.bytes_per_sector != 0
             || (uint32_t)(buffer + length_to_read) > REAL_MODE_LIMIT;
-        uint8_t *temp_buffer = use_temp_buffer ? (uint8_t*)FREE_MEM_ADDR : buffer;
+        size_t buffer_size = sectors_to_read * file->fat->bpb.bytes_per_sector;
+        uint8_t *temp_buffer = use_temp_buffer ? push(buffer_size) : buffer;
         disk_status_t status = disk_read(
             file->fat->drive_number,
             cluster_to_lba(file->fat, current_cluster) + sector_offset,
             temp_buffer,
-            sectors_to_read
-            );
-        if (status != DISK_SUCCESS) return FAT_DISK_ERROR;
+            sectors_to_read);
+        if (status != DISK_SUCCESS) {
+            pop(buffer_size);
+            return FAT_DISK_ERROR;
+        }
 
         if (use_temp_buffer) {
             memcpy(buffer, temp_buffer + byte_offset, length_to_read);
@@ -434,7 +467,14 @@ fat_result_t fat_read(const fat_file_t *file, uint32_t offset, uint32_t length, 
 
         if (length != 0) {
             fat_cluster_result_t cluster_result = fat_next_not_bad(file->fat, &current_cluster);
-            if (cluster_result != FAT_CLUSTER_VALID) return FAT_OUT_OF_FILE_BOUNDS;
+            if (cluster_result != FAT_CLUSTER_VALID) {
+                pop(buffer_size);
+                return FAT_OUT_OF_FILE_BOUNDS;
+            }
+        }
+
+        if (use_temp_buffer) {
+            pop(buffer_size);
         }
     }
 
