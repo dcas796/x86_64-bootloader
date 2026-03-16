@@ -30,6 +30,7 @@ disk_status_t disk_read(uint8_t drive_number, uint64_t lba, uint8_t *buffer, uin
     uint8_t return_code;
 
     __asm__ volatile (
+        "clc\n\t"
         "int $0x13\n"
         : "=@ccc" (has_error), "=a" (return_code)
         : "a" (0x42 << 8), "d" (drive_number), "S" ((uint16_t)((uint32_t)&dap & 0xffff)) /* this is to shut up the compiler */
