@@ -13,19 +13,17 @@ static void *ext_stack_top = (void*)EXTENDED_STACK_BASE;
 #define REP_MOVSB ".byte 0xF3, 0x67, 0xA4\n\t"
 
 void *memcpy(void *dst, const void *src, size_t n) {
-    int dwords = n / 4;
-    int remaining = n % 4;
-
     register uint32_t src32 __asm__("esi") = (uint32_t)src;
     register uint32_t dst32 __asm__("edi") = (uint32_t)dst;
-    register uint32_t count __asm__("ecx") = (uint32_t)dwords;
+    register uint32_t dwords __asm__("ecx") = n / 4;
+    size_t remaining = n % 4;
 
     __asm__ volatile (
         "cld\n\t"
         REP_MOVSL
         "mov %[rem], %%ecx\n\t"
         REP_MOVSB
-        : "+S"(src32), "+D"(dst32), "+c"(count)
+        : "+S"(src32), "+D"(dst32), "+c"(dwords)
         : [rem]"r"(remaining)
         : "memory"
     );
