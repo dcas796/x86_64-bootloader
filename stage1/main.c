@@ -130,7 +130,15 @@ void main() {
 
     puts("Extracting sysinfo...\r\n");
     sysinfo_t sysinfo;
-    get_sysinfo(&sysinfo, boot_drive);
+    sysinfo_result_t sysinfo_result = get_sysinfo(&sysinfo, boot_drive);
+    if (sysinfo_result != SYSINFO_SUCCESS) {
+        puts("Error extracting sysinfo. Reason: ");
+        puts(sysinfo_result_to_str(sysinfo_result));
+        puts("\r\n");
+        return;
+    }
+
+    /* `get_sysinfo` leaks stack memory (this is intended), so no more `push` nor `pop` */
 
     puts("Switching to protected mode & transferring control to boot binary...\r\n");
     transfer_control((void*)elf.header.entry_point, &sysinfo);
