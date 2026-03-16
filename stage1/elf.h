@@ -115,6 +115,7 @@ typedef enum {
     ELF_UNSUPPORTED_ARCH,
     ELF_NOT_EXECUTABLE,
     ELF_FAT_ERROR,
+    ELF_LOAD_UNDER_BOUNDARY,
 } elf_result_t;
 
 typedef struct {

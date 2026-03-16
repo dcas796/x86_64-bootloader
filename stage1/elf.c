@@ -1,6 +1,7 @@
 #include "elf.h"
 
 #include "mem.h"
+#include "memory_map.h"
 #include "string.h"
 
 /* === CONSTANTS === */
@@ -46,6 +47,7 @@ elf_result_t elf_load(const elf_t *elf) {
         elf_program_header_t prog_header;
         fat_read(elf->file, offset + entry_size * i, entry_size, &prog_header);
         if (prog_header.p_type != ELF_PT_LOAD) continue;
+        if (prog_header.p_vaddr < REAL_MODE_LIMIT) return ELF_LOAD_UNDER_BOUNDARY;
         fat_read(elf->file, prog_header.p_offset, prog_header.p_filesz, (void*)prog_header.p_vaddr);
     }
 
@@ -64,6 +66,8 @@ const char *elf_result_to_str(elf_result_t result) {
             return "Not executable";
         case ELF_FAT_ERROR:
             return "FAT error";
+        case ELF_LOAD_UNDER_BOUNDARY:
+            return "Load under 1MiB boundary";
         default:
             return "Unknown";
     }
