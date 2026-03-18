@@ -5,6 +5,7 @@
 #include "print.h"
 
 static void *ext_stack_top = (void*)EXTENDED_STACK_BASE;
+static void *leak_top = nullptr;
 
 /* Encoding instructions manually because GCC doesn't want to do its job and insists on using the 16-bit version of
  * `rep movsl` and `rep movsb`, resulting in truncation of the addresses into 16-bit.
@@ -39,9 +40,17 @@ void *push(size_t n) {
     return ext_stack_top;
 }
 
+void *leak(size_t n) {
+    leak_top = push(n);
+    return leak_top;
+}
+
 void pop(size_t n) {
     if (EXTENDED_STACK_BASE - (uint32_t)ext_stack_top < n) {
         panic("Stack overflow");
+    }
+    if (leak_top != nullptr && (uint32_t)leak_top - (uint32_t)ext_stack_top < n) {
+        panic("Tried to pop intentionally leaked stack memory");
     }
     ext_stack_top += n;
 }

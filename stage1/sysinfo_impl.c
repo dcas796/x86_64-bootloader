@@ -65,7 +65,7 @@ sysinfo_result_t get_sysinfo(sysinfo_t *info, uint8_t boot_drive) {
     auto mregion = (mregion_t){ 0 };
 
     while (get_next_mregion(&mregion, &index)) {
-        mem_regions = push(sizeof(sysinfo_memregion_t));
+        mem_regions = leak(sizeof(sysinfo_memregion_t));
         convert_region(mregion, mem_regions);
         mregion = (mregion_t){ 0 };
         ++count;

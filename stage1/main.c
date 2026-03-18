@@ -138,8 +138,6 @@ void main() {
         return;
     }
 
-    /* `get_sysinfo` leaks stack memory (this is intended), so no more `push` nor `pop` */
-
     puts("Switching to protected mode & transferring control to boot binary...\r\n");
     transfer_control((void*)elf.header.entry_point, &sysinfo);
     puts("Returned from boot\r\n");
