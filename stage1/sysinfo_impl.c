@@ -158,7 +158,6 @@ sysinfo_result_t get_sysinfo(sysinfo_t *info, uint8_t boot_drive) {
     *info = (sysinfo_t){
         .boot_drive = boot_drive,
         .mem_regions = mem_regions,
-        .mem_regions_count = count,
     };
 
     return SYSINFO_SUCCESS;

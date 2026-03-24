@@ -131,7 +131,7 @@ void main() {
     }
 
     puts("Loading ELF...\r\n");
-    elf_result = elf_load(&elf, &sysinfo.mem_regions, &sysinfo.mem_regions_count);
+    elf_result = elf_load(&elf, &sysinfo.mem_regions);
     if (elf_result != ELF_SUCCESS) {
         puts("Error loading file. Reason: ");
         puts(elf_result_to_str(elf_result));

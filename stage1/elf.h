@@ -125,7 +125,7 @@ typedef struct {
 } elf_t;
 
 elf_result_t elf_open(elf_t *elf, const fat_file_t *file);
-elf_result_t elf_load(const elf_t *elf, sysinfo_memregion_t **loaded_regions, size_t *memory_regions_count);
+elf_result_t elf_load(const elf_t *elf, sysinfo_memregion_t **loaded_regions);
 const char *elf_result_to_str(elf_result_t result);
 
 #endif

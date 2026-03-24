@@ -50,11 +50,7 @@ static bool is_intersecting_used_memregions(
     return false;
 }
 
-static void append_memregion(
-    const elf_program_header_t *prog_header,
-    sysinfo_memregion_t **memory_regions,
-    size_t *memory_regions_count)
-{
+static void append_memregion(const elf_program_header_t *prog_header, sysinfo_memregion_t **memory_regions) {
     sysinfo_memregion_t *memregion = leak(sizeof(sysinfo_memregion_t));
     *memregion = (sysinfo_memregion_t){
         .next = nullptr,
@@ -64,7 +60,6 @@ static void append_memregion(
         .is_volatile = false,
     };
     insert_sorted(memory_regions, memregion);
-    ++*memory_regions_count;
 }
 
 /* === PUBLIC API === */
@@ -78,7 +73,7 @@ elf_result_t elf_open(elf_t *elf, const fat_file_t *file) {
     return validate_header(&elf->header);
 }
 
-elf_result_t elf_load(const elf_t *elf, sysinfo_memregion_t **memory_regions, size_t *memory_regions_count) {
+elf_result_t elf_load(const elf_t *elf, sysinfo_memregion_t **memory_regions) {
     uint16_t entry_count = elf->header.program_entry_count;
     uint16_t entry_size = elf->header.program_entry_size;
     uint32_t offset = elf->header.program_header_table;
@@ -93,7 +88,7 @@ elf_result_t elf_load(const elf_t *elf, sysinfo_memregion_t **memory_regions, si
             is_intersecting_used_memregions(&prog_header, *memory_regions))
             return ELF_LOAD_ON_RESERVED_MEMORY;
 
-        append_memregion(&prog_header, memory_regions, memory_regions_count);
+        append_memregion(&prog_header, memory_regions);
 
         result = fat_read(elf->file, prog_header.p_offset, prog_header.p_filesz, (void*)prog_header.p_vaddr);
         if (result != FAT_SUCCESS) return ELF_FAT_ERROR;

@@ -25,7 +25,6 @@ typedef struct sysinfo_memregion_t {
 typedef struct __attribute__((aligned(4))) {
     uint8_t boot_drive;
     sysinfo_memregion_t *mem_regions;
-    size_t mem_regions_count;
 } sysinfo_t;
 
 #endif
