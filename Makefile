@@ -29,12 +29,9 @@ clean:
 	$(MAKE) -C $(STAGE1_DIR) clean
 
 qemu: build
-	qemu-system-x86_64 -drive format=raw,file=$(BOOT_IMG)
+	qemu-system-i386 -drive format=raw,file=$(BOOT_IMG)
 
 qemu-debug: build
-	qemu-system-x86_64 -drive format=raw,file=$(BOOT_IMG) -s -S -monitor stdio
-
-qemu-debug-32: build
 	qemu-system-i386 -drive format=raw,file=$(BOOT_IMG) -gdb tcp::9000 -S -monitor stdio
 
 $(BOOT_IMG): $(STAGE0_BIN) $(STAGE1_BIN)

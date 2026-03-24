@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Debug QEMU" type="CLion_Remote" version="1" remoteCommand="localhost:9000" symbolFile="$ProjectFileDir$/stage1/build/stage1.elf" sysroot="">
-    <debugger kind="GDB">/opt/homebrew/bin/x86_64-elf-gdb</debugger>
+    <debugger kind="GDB">/opt/homebrew/bin/i386-elf-gdb</debugger>
     <method v="2" />
   </configuration>
 </component>

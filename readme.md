@@ -45,7 +45,7 @@ where `sysinfo_t` is a struct that contains information about the system. Its he
 
 To debug this bootloader you will need additional tools:
 - QEMU
-- `x86_64-elf-gdb` or `i386-elf-gdb`
+- `i386-elf-gdb`
 
 ### Debugging with GDB
 
@@ -55,15 +55,10 @@ When building `boot.img`, there are several generated intermediate artifacts:
 
 These ELFs have all the debugging information that GDB needs.
 
-To start the debugging process, first run one of the two commands:
+To start the debugging process, first run the command:
 ```shell
 make clean && make qemu-debug
 ```
-or 
-```shell
-make clean && make qemu-debug-32
-```
-depending on whether you are using `x86_64-elf-gdb` or `i386-elf-gdb` (the latter one is recommended over the other)
 
 Then, start GDB with the following arguments:
 ```shell
@@ -76,9 +71,7 @@ i386-elf-gdb -ex "sym $STAGE/build/$STAGE.elf" \
 where `$STAGE` is either `stage0` or `stage1` .
 
 **Notes:**
-- It is recommended to use `i386-elf-gdb` as it decodes function arguments and variables better.
-- When using `x86_64-elf-gdb` instead of `i386-elf-gdb`, remove the line `-ex "set architecture i8086"`.
-- Both GDBs produce trash disassembly, so don't trust it.
+- GDB produces trash 16-bit disassembly, so don't trust it.
 
 ### Debugging with CLion
 
@@ -86,16 +79,10 @@ To start debugging with CLion, you will first need to start QEMU like with GDB:
 ```shell
 make clean && make qemu-debug
 ```
-or
-```shell
-make clean && make qemu-debug-32
-```
 
-Then, using the provided debug configurations run either `Debug QEMU` or `Debug QEMU (32 bit)`, depending on which 
-command you have run.
+Then, using the provided debug configurations, run `Debug QEMU`.
 
 **Notes:**
-- Again, it is recommended to use the 32 bit version for the same reasons as before.
 - Out of the box, it will start debugging `stage1`. Change the symbol file to debug for `stage0`.
 - The provided debug configurations assume that you have installed GDB into `/opt/homebrew/bin/...`. Change this if 
 your GDB is somewhere else.

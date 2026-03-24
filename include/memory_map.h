@@ -18,6 +18,6 @@
 #define STATIC_STACK_LIMIT   0x10000
 
 
-#define PROTECTED_MODE_STACK_TOP 0xc00000 /* TODO: put this at the top of memory */
+#define ELF_STACK_ALIGNMENT  4
 
 #endif

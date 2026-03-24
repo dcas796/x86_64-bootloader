@@ -138,6 +138,8 @@ void main() {
     }
 
     puts("Switching to protected mode & transferring control to boot binary...\r\n");
-    transfer_control((void*)elf.header.entry_point, &sysinfo);
-    puts("Returned from boot\r\n");
+    control_result_t result = transfer_control((void*)elf.header.entry_point, &sysinfo);
+    puts("Error transferring control to kernel. Reason: ");
+    puts(control_result_to_str(result));
+    puts("\r\n");
 }
