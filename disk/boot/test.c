@@ -2,10 +2,10 @@
 
 #include <sysinfo.h>
 
-void __attribute__((noreturn)) entry(sysinfo_t info) {
+void __attribute__((noreturn)) entry(const sysinfo_t *info) {
     auto vga = (unsigned short *)0xb8000;
     vga[0] = (0x0f << 8) | '#';
-    vga[1] = (0x0f << 8) | (info.boot_drive - 2);
+    vga[1] = (0x0f << 8) | (info->boot_drive - 2);
 
     while (true) {
         __asm__ volatile (
