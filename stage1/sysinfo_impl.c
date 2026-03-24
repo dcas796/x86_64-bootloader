@@ -91,7 +91,13 @@ static void fix_right(sysinfo_memregion_t *this_region) {
 
     while (this_region->next != nullptr && limit_right > this_region->next->base_addr) {
         if (!is_left_more_restrictive(this_region->next->type, this_region->type)) {
-            this_region->next = this_region->next->next;
+            uint64_t next_region_limit_right = this_region->next->base_addr + this_region->next->size;
+            if (next_region_limit_right <= limit_right) {
+                this_region->next = this_region->next->next;
+            } else {
+                this_region->next->size -= limit_right - this_region->next->base_addr;
+                this_region->next->base_addr = limit_right;
+            }
         } else {
             this_region->size = this_region->next->base_addr - this_region->base_addr;
 
