@@ -20,23 +20,18 @@ void __attribute__((noreturn)) transfer_control(void *entry_point, const sysinfo
         "mov %%ax, %%gs\n\t"
         "mov %%ax, %%ss\n\t"
 
-        "mov %3, %%esp\n\t"
+        "mov %2, %%esp\n\t"
 
-        /* Copy sysinfo_t by value onto the stack */
-        "mov %2, %%ecx\n\t"        /* ecx = sizeof(sysinfo_t) in dwords */
-        "sub %%ecx, %%esp\n\t"      /* make room on the stack */
-        "mov %%esp, %%edi\n\t"      /* dst = new stack top */
-        "mov %1, %%esi\n\t"         /* src = info pointer */
-        "rep movsd\n\t"             /* copy ecx dwords from esi to edi */
+        "push %1\n\t"
 
         /* Push sentinel return address */
-        "push $0\n\t"
+        "pushl $0\n\t"
 
         /* Jump to entry point */
         "jmp *%0\n\t"
 
         :
-        : "r"((uint32_t)entry_point), "r"((uint32_t)info), "i"(sizeof(sysinfo_t) / 4), "i"(PROTECTED_MODE_STACK_TOP + sizeof(sysinfo_t) + 1)
+        : "r"((uint32_t)entry_point), "r"((uint32_t)info), "i"(PROTECTED_MODE_STACK_TOP + sizeof(sysinfo_t*) + sizeof(long))
         : "eax", "ecx", "esi", "edi", "memory"
     );
     __builtin_unreachable();

@@ -35,7 +35,7 @@ support, yet, so keep in mind that long filenames will be truncated into 8.3 for
 
 The bootloader expects the ELF entry point to have the following signature:
 ```c++
-void __attribute__((noreturn)) entry(sysinfo_t info);
+void __attribute__((noreturn)) entry(const sysinfo_t *info);
 ```
 where `sysinfo_t` is a struct that contains information about the system. Its header file is located in 
 `include/sysinfo.h`.
