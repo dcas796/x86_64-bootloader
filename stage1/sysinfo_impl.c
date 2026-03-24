@@ -1,6 +1,7 @@
 #include "sysinfo_impl.h"
 
 #include "mem.h"
+#include "memory_map.h"
 
 #define MREGION_MAGIC 0x534D4150
 
@@ -160,6 +161,16 @@ sysinfo_result_t get_sysinfo(sysinfo_t *info, uint8_t boot_drive) {
     }
 
     if (count == 0) return SYSINFO_EMPTY_MEMORY_LAYOUT;
+
+    sysinfo_memregion_t *reserved = static_alloc(sizeof(sysinfo_memregion_t));
+    *reserved = (sysinfo_memregion_t){
+        .next = nullptr,
+        .base_addr = 0x0,
+        .size = REAL_MODE_LIMIT,
+        .type = SYSINFO_MT_RESERVED,
+        .is_volatile = false,
+    };
+    insert_sorted(&mem_regions, reserved);
 
     *info = (sysinfo_t){
         .boot_drive = boot_drive,
