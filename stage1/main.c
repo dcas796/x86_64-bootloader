@@ -12,7 +12,6 @@
 extern uint8_t boot_drive;
 
 #define BOOT_OPTIONS_TXT            "/boot/options.txt"
-#define BOOT_OPTIONS_TXT_MAX_LEN    1024
 
 void main() {
     puts("stage2\r\n");
@@ -67,14 +66,10 @@ void main() {
         return;
     }
 
-    // TODO: dynamically allocate memory for this
-    if (options_txt.entry.file_size > BOOT_OPTIONS_TXT_MAX_LEN) {
-        puts("/boot/options.txt is larger than 1024 bytes\r\n");
-        return;
-    }
 
     puts("Reading file: " BOOT_OPTIONS_TXT "\r\n");
-    char options_txt_contents[BOOT_OPTIONS_TXT_MAX_LEN + 1];
+    uint32_t options_txt_length = options_txt.entry.file_size + 1;
+    char *options_txt_contents = push(options_txt_length);
     fat_result = fat_read(&options_txt, 0, options_txt.entry.file_size, options_txt_contents);
     if (fat_result != FAT_SUCCESS) {
         puts("Error reading file. Reason: ");
@@ -93,6 +88,9 @@ void main() {
         puts("\r\n");
         return;
     }
+
+    pop(options_txt_length);
+
     puts("Boot binary path: ");
     puts(boot_options.boot_binary);
     puts("\r\nLoad offset: 0x");
