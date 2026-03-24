@@ -71,7 +71,7 @@ static void add_padding_right(sysinfo_memregion_t *this_region) {
             this_region->next->size += this_region->next->base_addr - limit_right;
             this_region->next->base_addr = limit_right;
         } else if (limit_right < this_region->next->base_addr) {
-            sysinfo_memregion_t *padding = leak(sizeof(sysinfo_memregion_t));
+            sysinfo_memregion_t *padding = static_alloc(sizeof(sysinfo_memregion_t));
             *padding = (sysinfo_memregion_t){
                 .next = this_region->next,
                 .base_addr = limit_right,
@@ -96,7 +96,7 @@ static void fix_right(sysinfo_memregion_t *this_region) {
             this_region->size = this_region->next->base_addr - this_region->base_addr;
 
             if (limit_right > this_region->next->base_addr + this_region->next->size) {
-                sysinfo_memregion_t *split_region = leak(sizeof(sysinfo_memregion_t));
+                sysinfo_memregion_t *split_region = static_alloc(sizeof(sysinfo_memregion_t));
                 memcpy(split_region, this_region, sizeof(sysinfo_memregion_t));
                 split_region->base_addr = this_region->next->base_addr + this_region->next->size;
                 split_region->size = limit_right - split_region->base_addr;
@@ -147,7 +147,7 @@ sysinfo_result_t get_sysinfo(sysinfo_t *info, uint8_t boot_drive) {
     auto mregion = (mregion_t){ 0 };
 
     while (get_next_mregion(&mregion, &index)) {
-        sysinfo_memregion_t *this_region = leak(sizeof(sysinfo_memregion_t));
+        sysinfo_memregion_t *this_region = static_alloc(sizeof(sysinfo_memregion_t));
         convert_region(mregion, this_region);
         insert_sorted(&mem_regions, this_region);
         ++count;

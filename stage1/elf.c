@@ -51,7 +51,7 @@ static bool is_intersecting_used_memregions(
 }
 
 static void append_memregion(const elf_program_header_t *prog_header, sysinfo_memregion_t **memory_regions) {
-    sysinfo_memregion_t *memregion = leak(sizeof(sysinfo_memregion_t));
+    sysinfo_memregion_t *memregion = static_alloc(sizeof(sysinfo_memregion_t));
     *memregion = (sysinfo_memregion_t){
         .next = nullptr,
         .base_addr = prog_header->p_vaddr,

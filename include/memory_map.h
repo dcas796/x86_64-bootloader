@@ -13,7 +13,9 @@
 #define REAL_MODE_LIMIT     ((0xffff << 4) + 0xffff)
 
 #define EXTENDED_STACK_BASE  0x80000
-#define EXTENDED_STACK_LIMIT 0x10000
+#define EXTENDED_STACK_LIMIT 0x40000
+#define STATIC_STACK_BASE    EXTENDED_STACK_LIMIT
+#define STATIC_STACK_LIMIT   0x10000
 
 
 #define PROTECTED_MODE_STACK_TOP 0xc00000 /* TODO: put this at the top of memory */
