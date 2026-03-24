@@ -11,7 +11,7 @@ typedef struct PACKED {
     uint32_t ext_attr;
 } mregion_t;
 
-static bool get_next_mregion(mregion_t *region, uint32_t *index) {
+static bool get_next_mregion(const mregion_t *region, uint32_t *index) {
     bool has_error;
     uint32_t function = 0xE820;
 
