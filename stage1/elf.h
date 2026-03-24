@@ -3,6 +3,7 @@
 
 #include <types.h>
 #include "fat.h"
+#include "sysinfo.h"
 
 typedef struct PACKED {
     uint8_t  magic[4];
@@ -115,7 +116,7 @@ typedef enum {
     ELF_UNSUPPORTED_ARCH,
     ELF_NOT_EXECUTABLE,
     ELF_FAT_ERROR,
-    ELF_LOAD_UNDER_BOUNDARY,
+    ELF_LOAD_ON_RESERVED_MEMORY,
 } elf_result_t;
 
 typedef struct {
@@ -124,7 +125,7 @@ typedef struct {
 } elf_t;
 
 elf_result_t elf_open(elf_t *elf, const fat_file_t *file);
-elf_result_t elf_load(const elf_t *elf);
+elf_result_t elf_load(const elf_t *elf, sysinfo_memregion_t **loaded_regions, size_t *memory_regions_count);
 const char *elf_result_to_str(elf_result_t result);
 
 #endif

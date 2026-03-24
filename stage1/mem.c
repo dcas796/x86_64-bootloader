@@ -40,6 +40,7 @@ void *push(size_t n) {
     return ext_stack_top;
 }
 
+// TODO: for leaking, put it in another stack
 void *leak(size_t n) {
     leak_top = push(n);
     return leak_top;

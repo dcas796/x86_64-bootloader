@@ -67,6 +67,7 @@ void main() {
         return;
     }
 
+    // TODO: dynamically allocate memory for this
     if (options_txt.entry.file_size > BOOT_OPTIONS_TXT_MAX_LEN) {
         puts("/boot/options.txt is larger than 1024 bytes\r\n");
         return;
@@ -119,21 +120,21 @@ void main() {
         return;
     }
 
-    puts("Loading ELF...\r\n");
-    elf_result = elf_load(&elf);
-    if (elf_result != ELF_SUCCESS) {
-        puts("Error loading file. Reason: ");
-        puts(elf_result_to_str(elf_result));
-        puts("\r\n");
-        return;
-    }
-
     puts("Extracting sysinfo...\r\n");
     sysinfo_t sysinfo;
     sysinfo_result_t sysinfo_result = get_sysinfo(&sysinfo, boot_drive);
     if (sysinfo_result != SYSINFO_SUCCESS) {
         puts("Error extracting sysinfo. Reason: ");
         puts(sysinfo_result_to_str(sysinfo_result));
+        puts("\r\n");
+        return;
+    }
+
+    puts("Loading ELF...\r\n");
+    elf_result = elf_load(&elf, &sysinfo.mem_regions, &sysinfo.mem_regions_count);
+    if (elf_result != ELF_SUCCESS) {
+        puts("Error loading file. Reason: ");
+        puts(elf_result_to_str(elf_result));
         puts("\r\n");
         return;
     }
