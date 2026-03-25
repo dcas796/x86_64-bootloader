@@ -2,7 +2,7 @@
 
 A simple bootloader for x86_64 kernels.
 
-This bootloader loads a raw executable binary from a FAT formatted disk into memory and executes it. 
+This bootloader loads an ELF binary from a FAT formatted disk into memory and executes it. 
 `stage0` is stored in the boot sector (sector 0) and `stage1` is stored in the first reserved sectors of the FAT file 
 system.
 
@@ -16,7 +16,7 @@ You will need:
 
 ## Usage
 
-The `make` command will write a FAT formatted disk image to `./build/boot.img` with the contents of the folder 
+The `make` command will write a FAT formatted bootable disk image to `./build/boot.img` with the contents of the folder 
 `./disk/`. The bootloader has a config file, `/boot/options.txt`, where boot parameters can be specified.
 
 ### `options.txt` format
@@ -28,6 +28,7 @@ parameters are:
 support, yet, so keep in mind that long filenames will be truncated into 8.3 format.
 
 **Notes:** 
+- Neither dynamically linked nor relocatable executables are supported.
 - The ELF cannot load segments to memory below 1MiB, as there are important BIOS and bootloader code and data.
 
 ### `boot_binary` entry point
