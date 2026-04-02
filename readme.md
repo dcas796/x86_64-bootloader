@@ -19,6 +19,15 @@ You will need:
 The `make` command will write a FAT formatted bootable disk image to `./build/boot.img` with the contents of the folder 
 `./disk/`. The bootloader has a config file, `/boot/options.txt`, where boot parameters can be specified.
 
+### Makefile options
+- `make clean` - removes all build-related files, including the disk image.
+- `make build` - builds the bootloader and the disk image.
+- `make qemu` - runs the generated disk image in QEMU.
+- `make qemu-debug` - runs the generated disk image in QEMU in debugging mode.
+
+### Makefile variables
+- `RELEASE` - if set to `1`, the bootloader will be built with compiler optimizations.
+
 ### `options.txt` format
 
 The file consists of a list of key-value pairs, in the form of `key=value`, separated by newlines. The possible config
