@@ -11,6 +11,7 @@ void __attribute__((noreturn)) entry(const sysinfo_t *info) {
         __asm__ volatile (
             "hlt"
             : :
+            : "memory"
         );
     }
 }

@@ -5,6 +5,7 @@ void putc(char c) {
         "int $0x10\n"
         :
         : "a" (0x0e << 8 | c), "b" (0)
+        : "memory"
     );
 }
 

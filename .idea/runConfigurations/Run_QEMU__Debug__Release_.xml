@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run QEMU (Debug, Release)" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile">
+    <makefile filename="$PROJECT_DIR$/Makefile" target="qemu-debug" workingDirectory="$PROJECT_DIR$" arguments="">
+      <envs>
+        <env name="RELEASE" value="1" />
+      </envs>
+    </makefile>
+    <method v="2">
+      <option name="RunConfigurationTask" enabled="false" run_configuration_name="Clean" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
+    </method>
+  </configuration>
+</component>

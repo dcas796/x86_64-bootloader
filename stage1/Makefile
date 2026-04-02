@@ -7,6 +7,9 @@ RESULT := $(BUILD_DIR)/stage1.bin
 
 CFLAGS := -g -c -m16 -std=c23 -ffreestanding -fno-pic -fno-stack-protector -mgeneral-regs-only -nostdlib -Wall -Wextra
 CFLAGS += -I$(INCLUDE_DIR)
+ifeq ($(RELEASE),1)
+	CFLAGS += -O2
+endif
 ASFLAGS := -g -m32 -c -I$(INCLUDE_DIR)
 LDFLAGS := -g -m elf_i386 -T$(LINKER_SCRIPT)
 

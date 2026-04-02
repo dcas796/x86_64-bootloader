@@ -6,8 +6,8 @@ ENTRY(_start)
 SECTIONS {
     . = STAGE1_PHY_ADDR;
 
-    .text.start : {
-        *(.text.start*)
+    .bootloader_start : {
+        *(.bootloader_start*)
     }
 
     .text : {

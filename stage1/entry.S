@@ -6,7 +6,7 @@
 .extern __stage1_end
 .extern main
 
-.section .text.start, "a"
+.section .bootloader_start, "ax"
 .globl _start
 _start:
     /* save the boot drive number passed in as an argment */
