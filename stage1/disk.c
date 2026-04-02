@@ -27,7 +27,7 @@ disk_status_t disk_read(uint8_t drive_number, uint64_t lba, uint8_t *buffer, uin
     };
 
     bool has_error;
-    uint8_t return_code;
+    uint16_t return_code;
 
     __asm__ volatile (
         "clc\n\t"
@@ -36,7 +36,7 @@ disk_status_t disk_read(uint8_t drive_number, uint64_t lba, uint8_t *buffer, uin
         : "a" (0x42 << 8), "d" (drive_number), "S" ((uint16_t)((uint32_t)&dap & 0xffff)) /* this is to shut up the compiler */
     );
 
-    return has_error ? (disk_status_t)return_code : DISK_SUCCESS;
+    return has_error ? (disk_status_t)(return_code >> 8) : DISK_SUCCESS;
 }
 
 const char *disk_status_to_str(disk_status_t status) {
