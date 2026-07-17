@@ -13,6 +13,28 @@ static void *static_stack_top = (void*)STATIC_STACK_BASE;
 #define REP_MOVSL ".byte 0xF3, 0x67, 0x66, 0xA5\n\t"
 #define REP_MOVSB ".byte 0xF3, 0x67, 0xA4\n\t"
 
+#define REP_STOSL ".byte 0xF3, 0x67, 0x66, 0xAB\n\t"
+#define REP_STOSB ".byte 0xF3, 0x67, 0xAA\n\t"
+
+void *memset(void *dst, uint8_t b, size_t n) {
+    register uint32_t dst32 __asm__("edi") = (uint32_t)dst;
+    register uint32_t dwords __asm__("ecx") = n / 4;
+    register uint32_t val __asm__("eax") = b * 0x01010101u; // replicate byte across all 4 bytes
+    size_t remaining = n % 4;
+
+    __asm__ volatile (
+        "cld\n\t"
+        REP_STOSL
+        "mov %[rem], %%ecx\n\t"
+        REP_STOSB
+        : "+D"(dst32), "+c"(dwords), "+a"(val)
+        : [rem]"r"(remaining)
+        : "memory"
+    );
+
+    return dst;
+}
+
 void *memcpy(void *dst, const void *src, size_t n) {
     register uint32_t src32 __asm__("esi") = (uint32_t)src;
     register uint32_t dst32 __asm__("edi") = (uint32_t)dst;

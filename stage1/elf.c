@@ -90,8 +90,13 @@ elf_result_t elf_load(const elf_t *elf, sysinfo_memregion_t **memory_regions) {
 
         append_memregion(&prog_header, memory_regions);
 
-        result = fat_read(elf->file, prog_header.p_offset, prog_header.p_filesz, (void*)prog_header.p_vaddr);
+        void *section_buffer = (void*)prog_header.p_vaddr;
+        result = fat_read(elf->file, prog_header.p_offset, prog_header.p_filesz, section_buffer);
         if (result != FAT_SUCCESS) return ELF_FAT_ERROR;
+
+        if (prog_header.p_memsz > prog_header.p_filesz) {
+            memset(section_buffer + prog_header.p_filesz, 0, prog_header.p_memsz - prog_header.p_filesz);
+        }
     }
 
     return ELF_SUCCESS;
