@@ -60,6 +60,7 @@ gdtr_unreal:
    .word (gdt_unreal_end - gdt_unreal - 1)
    .long gdt_unreal
 
+.align 8
 gdt_unreal:
 gdt_unreal_null:
     .quad 0
@@ -84,6 +85,7 @@ gdtr:
    .word (gdt_end - gdt - 1)
    .long gdt
 
+.align 8
 gdt:
 gdt_null:
     .quad 0
