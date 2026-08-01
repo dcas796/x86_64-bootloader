@@ -16,6 +16,8 @@ static void *static_stack_top = (void*)STATIC_STACK_BASE;
 #define REP_STOSL ".byte 0xF3, 0x67, 0x66, 0xAB\n\t"
 #define REP_STOSB ".byte 0xF3, 0x67, 0xAA\n\t"
 
+#define REP_CMPSL ".byte 0xF3, 0x67, 0x66, 0xA7\n\t"
+
 void *memset(void *dst, uint8_t b, size_t n) {
     register uint32_t dst32 __asm__("edi") = (uint32_t)dst;
     register uint32_t dwords __asm__("ecx") = n / 4;
@@ -52,6 +54,37 @@ void *memcpy(void *dst, const void *src, size_t n) {
     );
 
     return dst;
+}
+
+bool memeq(const void *p1, const void *p2, size_t n) {
+    register uint32_t addr1 __asm__("esi") = (uint32_t)p1;
+    register uint32_t addr2 __asm__("edi") = (uint32_t)p2;
+    register uint32_t dwords __asm__("ecx") = n / 4;
+    register uint32_t equal __asm__("eax");
+
+    __asm__ volatile (
+        "cld\n\t"
+        "xor %%eax, %%eax\n\t"
+        REP_CMPSL
+        "sete %%al\n\t"
+        "movzbl %%al, %%eax\n\t"
+        : "+S"(addr1), "+D"(addr2), "+c"(dwords), "=a"(equal)
+        :
+        : "cc", "memory"
+    );
+
+    if (equal == 0) return false;
+
+    auto s1 = (const uint8_t *)addr1;
+    auto s2 = (const uint8_t *)addr2;
+    size_t remaining = n % 4;
+    for (size_t i = 0; i < remaining; i++) {
+        if (s1[i] != s2[i]) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void *push(size_t n) {
