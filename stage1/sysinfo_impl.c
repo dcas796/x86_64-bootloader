@@ -178,6 +178,47 @@ static sysinfo_result_t get_mem_regions(sysinfo_memregion_t **mem_regions) {
     return SYSINFO_SUCCESS;
 }
 
+static bool is_rsdp_valid(const uint8_t *p) {
+    typedef struct __attribute__ ((packed)) {
+        char signature[8];
+        uint8_t checksum;
+        char oem_id[6];
+        uint8_t revision;
+        uint32_t rsdt_address;
+    } rsdp_t;
+
+    typedef struct __attribute__ ((packed)) {
+        char signature[8];
+        uint8_t checksum;
+        char oem_id[6];
+        uint8_t revision;
+        uint32_t rsdt_address;
+        uint32_t length;
+        uint64_t xsdt_address;
+        uint8_t extended_checksum;
+        uint8_t reserved[3];
+    } xsdp_t;
+
+    auto rsdp = (const rsdp_t *)p;
+
+    uint8_t sum = 0;
+    for (size_t i = 0; i < sizeof(rsdp_t); i++) {
+        sum += p[i];
+    }
+    if (sum != 0) return false;
+
+    if (rsdp->revision > 0) {
+        auto xsdp = (const xsdp_t *)p;
+
+        for (size_t i = sizeof(rsdp_t); i < xsdp->length; i++) {
+            sum += p[i];
+        }
+        if (sum != 0) return false;
+    }
+
+    return true;
+}
+
 static sysinfo_result_t get_rsdp(uint8_t **rdsp) {
     *rdsp = nullptr;
 
@@ -185,14 +226,14 @@ static sysinfo_result_t get_rsdp(uint8_t **rdsp) {
     auto const ebda_base = (uint8_t*)(ebda_segment * 16);
 
     for (uint8_t *p = ebda_base; p < ebda_base + EBDA_RSDP_SEARCH_SIZE; p += 16) {
-        if (memeq(RSDP_SIGNATURE, (const char *)p, sizeof(RSDP_SIGNATURE) - 1)) {
+        if (memeq(RSDP_SIGNATURE, (const char *)p, sizeof(RSDP_SIGNATURE) - 1) && is_rsdp_valid(p)) {
             *rdsp = p;
             return SYSINFO_SUCCESS;
         }
     }
 
     for (uint8_t *p = BIOS_READ_ONLY_REGION_START; p < BIOS_READ_ONLY_REGION_END; p += 16) {
-        if (memeq(RSDP_SIGNATURE, (const char *)p, sizeof(RSDP_SIGNATURE) - 1)) {
+        if (memeq(RSDP_SIGNATURE, (const char *)p, sizeof(RSDP_SIGNATURE) - 1) && is_rsdp_valid(p)) {
             *rdsp = p;
             return SYSINFO_SUCCESS;
         }
@@ -226,7 +267,7 @@ const char *sysinfo_result_to_str(sysinfo_result_t result) {
         case SYSINFO_EMPTY_MEMORY_LAYOUT:
             return "Memory layout reported by BIOS is empty";
         case SYSINFO_RSDP_NOT_FOUND:
-            return "Could not find RSDP";
+            return "Could not find a valid RSDP";
         default:
             return "Unknown";
     }
