@@ -3,7 +3,6 @@
 
 #include <types.h>
 
-
 // Assumption: this is ordered from least restrictive to most restrictive
 typedef enum {
     SYSINFO_MT_USABLE,
@@ -25,6 +24,7 @@ typedef struct sysinfo_memregion_t {
 typedef struct __attribute__((aligned(4))) {
     uint8_t boot_drive;
     sysinfo_memregion_t *mem_regions;
+    uint8_t *rsdp;
 } sysinfo_t;
 
 #endif

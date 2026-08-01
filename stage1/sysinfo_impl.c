@@ -3,7 +3,12 @@
 #include "mem.h"
 #include "memory_map.h"
 
-#define MREGION_MAGIC 0x534D4150
+#define MREGION_MAGIC               0x534D4150
+#define RSDP_SIGNATURE              "RSD PTR "
+#define EBDA_SEGMENT_FIELD          (uint16_t*)0x40E
+#define EBDA_RSDP_SEARCH_SIZE       1024
+#define BIOS_READ_ONLY_REGION_START (uint8_t*)0xE0000
+#define BIOS_READ_ONLY_REGION_END   (uint8_t*)0xFFFFF
 
 typedef struct PACKED {
     uint64_t base_addr;
@@ -146,9 +151,7 @@ void insert_sorted(sysinfo_memregion_t **mem_regions, sysinfo_memregion_t *this_
     }
 }
 
-sysinfo_result_t get_sysinfo(sysinfo_t *info, uint8_t boot_drive) {
-    sysinfo_memregion_t *mem_regions = nullptr;
-
+static sysinfo_result_t get_mem_regions(sysinfo_memregion_t **mem_regions) {
     uint32_t count = 0;
     uint32_t index = 0;
     auto mregion = (mregion_t){ 0 };
@@ -156,7 +159,7 @@ sysinfo_result_t get_sysinfo(sysinfo_t *info, uint8_t boot_drive) {
     while (get_next_mregion(&mregion, &index)) {
         sysinfo_memregion_t *this_region = static_alloc(sizeof(sysinfo_memregion_t));
         convert_region(mregion, this_region);
-        insert_sorted(&mem_regions, this_region);
+        insert_sorted(mem_regions, this_region);
         ++count;
     }
 
@@ -170,11 +173,47 @@ sysinfo_result_t get_sysinfo(sysinfo_t *info, uint8_t boot_drive) {
         .type = SYSINFO_MT_RESERVED,
         .is_volatile = false,
     };
-    insert_sorted(&mem_regions, reserved);
+    insert_sorted(mem_regions, reserved);
+
+    return SYSINFO_SUCCESS;
+}
+
+static sysinfo_result_t get_rsdp(uint8_t **rdsp) {
+    *rdsp = nullptr;
+
+    const uint16_t ebda_segment = *EBDA_SEGMENT_FIELD;
+    auto const ebda_base = (uint8_t*)(ebda_segment * 16);
+
+    for (uint8_t *p = ebda_base; p < ebda_base + EBDA_RSDP_SEARCH_SIZE; p += 16) {
+        if (memeq(RSDP_SIGNATURE, (const char *)p, sizeof(RSDP_SIGNATURE) - 1)) {
+            *rdsp = p;
+            return SYSINFO_SUCCESS;
+        }
+    }
+
+    for (uint8_t *p = BIOS_READ_ONLY_REGION_START; p < BIOS_READ_ONLY_REGION_END; p += 16) {
+        if (memeq(RSDP_SIGNATURE, (const char *)p, sizeof(RSDP_SIGNATURE) - 1)) {
+            *rdsp = p;
+            return SYSINFO_SUCCESS;
+        }
+    }
+
+    return SYSINFO_RSDP_NOT_FOUND;
+}
+
+sysinfo_result_t get_sysinfo(sysinfo_t *info, uint8_t boot_drive) {
+    sysinfo_memregion_t *mem_regions = nullptr;
+    sysinfo_result_t result = get_mem_regions(&mem_regions);
+    if (result != SYSINFO_SUCCESS) return result;
+
+    uint8_t *rsdp = nullptr;
+    result = get_rsdp(&rsdp);
+    if (result != SYSINFO_SUCCESS) return result;
 
     *info = (sysinfo_t){
         .boot_drive = boot_drive,
         .mem_regions = mem_regions,
+        .rsdp = rsdp,
     };
 
     return SYSINFO_SUCCESS;
@@ -186,6 +225,8 @@ const char *sysinfo_result_to_str(sysinfo_result_t result) {
             return "Success";
         case SYSINFO_EMPTY_MEMORY_LAYOUT:
             return "Memory layout reported by BIOS is empty";
+        case SYSINFO_RSDP_NOT_FOUND:
+            return "Could not find RSDP";
         default:
             return "Unknown";
     }

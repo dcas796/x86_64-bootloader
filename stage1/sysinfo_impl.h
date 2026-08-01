@@ -7,6 +7,7 @@
 typedef enum {
     SYSINFO_SUCCESS,
     SYSINFO_EMPTY_MEMORY_LAYOUT,
+    SYSINFO_RSDP_NOT_FOUND,
 } sysinfo_result_t;
 
 void insert_sorted(sysinfo_memregion_t **mem_regions, sysinfo_memregion_t *this_region);
